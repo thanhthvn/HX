@@ -25,9 +25,11 @@ public class VoiceTransferService extends IntentService {
     private static final int SOCKET_TIMEOUT = 5000;
     public static final String ACTION_SEND_VOICE = "cnc.hx.SEND_VOICE";
     public static final String EXTRAS_FILE_PATH = "file_url";
-    public static final String EXTRAS_GROUP_OWNER_ADDRESS = "go_host2";
-    public static final String EXTRAS_GROUP_OWNER_PORT = "go_port2";
+    public static final String EXTRAS_GROUP_OWNER_ADDRESS = "go_host";
+    public static final String EXTRAS_GROUP_OWNER_PORT = "go_port";
 
+    static Socket socket;
+    
     public VoiceTransferService(String name) {
         super(name);
     }
@@ -35,7 +37,8 @@ public class VoiceTransferService extends IntentService {
     public VoiceTransferService() {
         super("VoiceTransferService");
     }
-
+    
+    
     /*
      * (non-Javadoc)
      * @see android.app.IntentService#onHandleIntent(android.content.Intent)
@@ -43,31 +46,38 @@ public class VoiceTransferService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
+    	Log.d("VoiceTransferService", "onHandleIntent");
         Context context = getApplicationContext();
         if (intent.getAction().equals(ACTION_SEND_VOICE)) {
         	// VOICE_STREAM
             String host = intent.getExtras().getString(EXTRAS_GROUP_OWNER_ADDRESS);
-            Socket socket = new Socket();
             int port = intent.getExtras().getInt(EXTRAS_GROUP_OWNER_PORT);
 
             try {
-                Log.d(WiFiDirectActivity.TAG, "Opening client socket - ");
-                socket.bind(null);
-                socket.connect((new InetSocketAddress(host, port)), SOCKET_TIMEOUT);
-
-                Log.d(WiFiDirectActivity.TAG, "Client socket - " + socket.isConnected());
-                
-                byte[] data = intent.getExtras().getByteArray("");
-                if (data !=null) DeviceDetailFragment.receiveVoice(data);
-                Log.d(WiFiDirectActivity.TAG, "Client: Data written");
+                Log.d("VoiceTransferService.onHandleIntent", "Opening client socket - ");
+                if (socket == null) {
+                	socket = new Socket();
+                }
+                if (!socket.isConnected()) {
+                	socket.bind(null);
+	                socket.connect((new InetSocketAddress(host, port)), SOCKET_TIMEOUT);
+	                Log.d("VoiceTransferService.onHandleIntent", "Client socket - " + socket.isConnected());
+                }
+                OutputStream stream = socket.getOutputStream();
+                byte[] data = intent.getExtras().getByteArray("VOICE_STREAM");
+                if (data != null) {
+                	Log.d("VoiceTransferService", "DATA size: " + data.length);
+                	DeviceDetailFragment.sendVoice(data, stream);
+                }
+                Log.d("VoiceTransferService.onHandleIntent", "Client: Data written");
             } catch (IOException e) {
-                Log.e(WiFiDirectActivity.TAG, e.getMessage());
+                Log.e("VoiceTransferService IOException", e.getMessage());
             } finally {
                 if (socket != null) {
                     if (socket.isConnected()) {
                         try {
-                            socket.close();
-                        } catch (IOException e) {
+                            // socket.close();
+                        } catch (Exception e) {
                             // Give up
                             e.printStackTrace();
                         }
@@ -77,4 +87,5 @@ public class VoiceTransferService extends IntentService {
 
         }
     }
+    
 }

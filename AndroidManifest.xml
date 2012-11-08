@@ -38,9 +38,17 @@
             android:name=".AudioRecordActivity"
             android:label="@string/title_activity_main">
         </activity>
+        <activity
+            android:name=".ServerActivity"
+            android:label="@string/title_activity_main">
+        </activity>
+        <activity
+            android:name=".ClientActivity"
+            android:label="@string/title_activity_main">
+        </activity>
         <!-- Used for transferring files  after a successful connection -->
-        <!-- service android:enabled="true" android:name=".FileTransferService" / -->
-        <service android:enabled="true" android:name=".VoiceTransferService" />
+        <service android:enabled="true" android:name=".FileTransferService" />
+        <!-- service android:enabled="true" android:name=".VoiceTransferService" / -->
         
     </application>
 

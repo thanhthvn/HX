@@ -44,6 +44,7 @@ import android.widget.TextView;
 
 import cnc.hx.DeviceListFragment.DeviceActionListener;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -139,7 +140,7 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
+    	Log.d("DeviceDetailFragment", "onActivityResult");
         // User has picked an image. Transfer it to group owner i.e peer using
         // FileTransferService.
     	/*
@@ -154,9 +155,10 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
                 info.groupOwnerAddress.getHostAddress());
         serviceIntent.putExtra(FileTransferService.EXTRAS_GROUP_OWNER_PORT, 8988);
         getActivity().startService(serviceIntent); */
-    }
-
+    }   
+    
     public void onConnectionInfoAvailable(final WifiP2pInfo info) {
+    	Log.d("onConnectionInfoAvailable", "WifiP2pInfo " + info.toString());
         if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
@@ -177,15 +179,21 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         // server. The file server is single threaded, single connection server
         // socket.
         if (info.groupFormed && info.isGroupOwner) {
-            new FileServerAsyncTask(getActivity(), mContentView.findViewById(R.id.status_text)).execute();
-        	new SendVoiceAsyncTask(getActivity(), mContentView.findViewById(R.id.status_text)).execute();
+            // new FileServerAsyncTask(getActivity(), mContentView.findViewById(R.id.status_text)).execute();
+        	//new SendVoiceAsyncTask(getActivity(), mContentView.findViewById(R.id.status_text)).execute();
+        	Intent intent = new Intent(getActivity(), ServerActivity.class);
+        	intent.putExtra("INFO", info.groupOwnerAddress.getHostAddress());
+        	startActivity(intent);
         } else if (info.groupFormed) {
             // The other device acts as the client. In this case, we enable the
             // get file button.
-            mContentView.findViewById(R.id.btn_start_client).setVisibility(View.VISIBLE);
-            mContentView.findViewById(R.id.btn_start_voice).setVisibility(View.VISIBLE);
-            ((TextView) mContentView.findViewById(R.id.status_text)).setText(getResources()
-                    .getString(R.string.client_text));
+//            mContentView.findViewById(R.id.btn_start_client).setVisibility(View.VISIBLE);
+//            mContentView.findViewById(R.id.btn_start_voice).setVisibility(View.VISIBLE);
+//            ((TextView) mContentView.findViewById(R.id.status_text)).setText(getResources()
+//                    .getString(R.string.client_text));
+        	Intent intent = new Intent(getActivity(), ClientActivity.class);
+        	intent.putExtra("INFO", info.groupOwnerAddress.getHostAddress());
+            startActivity(intent);
         }
 
         // hide the connect button
@@ -309,14 +317,14 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         protected String doInBackground(Void... params) {
             try {
                 ServerSocket serverSocket = new ServerSocket(8988);
-                Log.d(WiFiDirectActivity.TAG, "Server: Socket opened");
+                Log.d("SendVoiceAsyncTask", "Server: Socket opened");
                 Socket client = serverSocket.accept();
-                Log.d(WiFiDirectActivity.TAG, "Server: connection done");
+                Log.d("SendVoiceAsyncTask", "Server: connection done");
                 InputStream inputstream = client.getInputStream();
-                //receiveVoice(inputstream);
+                receiveVoiceStream(inputstream);
                 serverSocket.close();
             } catch (IOException e) {
-                Log.e(WiFiDirectActivity.TAG, e.getMessage());
+                Log.e("SendVoiceAsyncTask", e.getMessage());
                 return null;
             }
             return null;
@@ -369,10 +377,10 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         
         voiceServiceIntent = new Intent(getActivity(), VoiceTransferService.class);
         voiceServiceIntent.setAction(VoiceTransferService.ACTION_SEND_VOICE);
-        //voiceServiceIntent.putExtra(VoiceTransferService.EXTRAS_FILE_PATH, uri.toString());
-        voiceServiceIntent.putExtra(VoiceTransferService.EXTRAS_GROUP_OWNER_ADDRESS,
-                info.groupOwnerAddress.getHostAddress());
+        voiceServiceIntent.putExtra(VoiceTransferService.EXTRAS_GROUP_OWNER_ADDRESS,info.groupOwnerAddress.getHostAddress());
         voiceServiceIntent.putExtra(VoiceTransferService.EXTRAS_GROUP_OWNER_PORT, 8988);
+        getActivity().startService(voiceServiceIntent);
+        
         recordingThread = new Thread(new Runnable()
 
         {
@@ -394,15 +402,10 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
     }
 
     private void writeAudioData() {
-
         byte data[] = new byte[bufferSize];
-
         while (isRecording) {
-
             recorder.read(data, 0, bufferSize);
-            //send(data);
             sendData(data);
-
         }
     }
 
@@ -410,12 +413,9 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         //TextView statusText = (TextView) mContentView.findViewById(R.id.status_text);
         //statusText.setText("Sending: " + uri);
         //Log.d(WiFiDirectActivity.TAG, "Intent----------- " + uri);
-        
-        
-        
+    	Log.d("sendData", "data size: " + data.length);
     	voiceServiceIntent.putExtra("VOICE_STREAM", data);
     	getActivity().startService(voiceServiceIntent);
-
     }
     
     private void send(byte[] data) {
@@ -436,7 +436,31 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
 
     }
     
+    public static void receiveVoiceStream(InputStream is) {
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		int nRead;
+		int SAMPLERATE = 8000;
+		int CHANNELS = AudioFormat.CHANNEL_CONFIGURATION_MONO;
+        int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
+    	int bufferSize = AudioRecord.getMinBufferSize(SAMPLERATE, CHANNELS,
+                AUDIO_FORMAT);
+		Log.d("receiveVoiceStream", is.toString());
+		byte[] data = new byte[16384]; //16384 bufferSize
+		try {
+			while ((nRead = is.read(data, 0, data.length)) != -1) {
+			  buffer.write(data, 0, nRead);
+			}
+			buffer.flush();
+			byte[] arr = buffer.toByteArray();
+			Log.d("receiveVoiceStream", "data size: " + arr.length);
+		    receiveVoice(arr);
+		} catch (IOException e) {
+			Log.e("receiveVoiceStream", e.getMessage());
+		}
+    }
+    
     public static boolean receiveVoice(byte[] data) {
+    	Log.d("receiveVoice", "data size: " + data.length);
     	int SAMPLERATE = 8000;
         int CHANNELS = AudioFormat.CHANNEL_CONFIGURATION_MONO;
         int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
@@ -457,4 +481,14 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         at.release();
         return true;
     }
+    
+    public static boolean sendVoice(byte[] data, OutputStream out) {
+        try {
+        	out.write(data);
+        	out.close();
+        } catch (IOException e) {
+            Log.d(WiFiDirectActivity.TAG, e.toString());
+        }
+        return true;
+    }	
 }
