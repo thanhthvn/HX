@@ -23,4 +23,6 @@
 	<string name="wifi_direct">Wifi Direct</string>
 	<string name="nfc">NFC</string>
 	<string name="send_file">Send File</string>
+	<string name="start">START VOICE</string>
+	<string name="stop">STOP VOICE</string>
 </resources>

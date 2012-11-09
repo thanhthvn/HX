@@ -67,7 +67,7 @@ public class VoiceTransferService extends IntentService {
                 byte[] data = intent.getExtras().getByteArray("VOICE_STREAM");
                 if (data != null) {
                 	Log.d("VoiceTransferService", "DATA size: " + data.length);
-                	DeviceDetailFragment.sendVoice(data, stream);
+                	//DeviceDetailFragment.sendVoice(data, stream);
                 }
                 Log.d("VoiceTransferService.onHandleIntent", "Client: Data written");
             } catch (IOException e) {

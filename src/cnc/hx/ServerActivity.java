@@ -1,6 +1,6 @@
 package cnc.hx;
 
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -14,22 +14,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.AudioManager;
-import android.media.AudioRecord;
 import android.media.AudioTrack;
-import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 @SuppressWarnings("deprecation")
 public class ServerActivity extends Activity  {
 
 	TextView txPairName;
 	String host;
-	
+	AudioTrack at;
 	
 	    
 	@Override
@@ -41,45 +40,38 @@ public class ServerActivity extends Activity  {
         Log.d("ClientActivity", "host" + host);
         if (host !=null) txPairName.setText(host);
         
-        new FileServerAsyncTask(this).execute();
+        at = new AudioTrack(AudioManager.STREAM_MUSIC, 44100, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, 20000, AudioTrack.MODE_STREAM);
 
 	}
 	
-	private boolean copyFile(InputStream inputStream, OutputStream out) {
-	        byte buf[] = new byte[1024];
-	        int len;
-	        int total = 0;
-	        try {
-	            while ((len = inputStream.read(buf)) != -1) {
-	                out.write(buf, 0, len);
-	                total+= len;
-	                //txPairName.setText(String.valueOf(total));
-	                Log.i("ServerActivity", "TOTAL: " +  total);
-	            }
-	            out.close();
-	            inputStream.close();
-	        } catch (IOException e) {
-	            Log.d(WiFiDirectActivity.TAG, e.toString());
-	            return false;
-	        }
-	        return true;
-	    }
-	 
+	@Override
+	protected void onResume() {
+		super.onResume();
+		new VoiceServerAsyncTask(this).execute();
+	}
+	
 	/**
      * A simple server socket that accepts connection and writes some data on
      * the stream.
      */
-    private class FileServerAsyncTask extends AsyncTask<Void, Void, String> {
+    private class VoiceServerAsyncTask extends AsyncTask<Void, Void, String> {
 
         private Context context;
 
         /**
          * @param context
          */
-        public FileServerAsyncTask(Context context) {
+        public VoiceServerAsyncTask(Context context) {
             this.context = context;
         }
 
+        @Override
+        protected void onPreExecute() {
+        	super.onPreExecute();
+        	at.play();
+        	Toast.makeText(context, "=== STOP ===" , Toast.LENGTH_LONG).show();
+        }
+        
         @Override
         protected String doInBackground(Void... params) {
             try {
@@ -87,18 +79,26 @@ public class ServerActivity extends Activity  {
                 Log.d(WiFiDirectActivity.TAG, "Server: Socket opened");
                 Socket client = serverSocket.accept();
                 Log.d(WiFiDirectActivity.TAG, "Server: connection done");
-                final File f = new File(Environment.getExternalStorageDirectory() + "/"
-                        + context.getPackageName() + "/wifip2pshared-" + System.currentTimeMillis()
-                        + ".jpg");
-
+                String fileName = Environment.getExternalStorageDirectory() + "/"
+	                + context.getPackageName() + "/hx-server-" + System.currentTimeMillis() + ".3gp";
+                final File f = new File(fileName);
                 File dirs = new File(f.getParent());
-                if (!dirs.exists())
-                    dirs.mkdirs();
+                if (!dirs.exists()) dirs.mkdirs();
                 f.createNewFile();
-
+                
                 Log.d(WiFiDirectActivity.TAG, "server: copying files " + f.toString());
-                InputStream inputstream = client.getInputStream();
-                ServerActivity.this.copyFile(inputstream, new FileOutputStream(f));
+                InputStream is = client.getInputStream();
+                OutputStream os = new BufferedOutputStream(new FileOutputStream(f)); //new FileOutputStream(f);
+                // ServerActivity.this.copyFile(inputstream, os);
+                int bufferSize = 1024;
+                byte[] buffer = new byte[bufferSize];
+                int len = 0;
+                while ((len = is.read(buffer)) != -1) {
+                	os.write(buffer, 0, len);
+                	Log.i("OutputStream", "LENGTH:" + len);
+                }
+                if(os != null)  os.close();
+                
                 serverSocket.close();
                 return f.getAbsolutePath();
             } catch (IOException e) {
@@ -112,11 +112,12 @@ public class ServerActivity extends Activity  {
             if (result != null) {
                 Intent intent = new Intent();
                 intent.setAction(android.content.Intent.ACTION_VIEW);
-                intent.setDataAndType(Uri.parse("file://" + result), "image/*");
+                intent.setDataAndType(Uri.parse("file://" + result), "audio/*");
                 context.startActivity(intent);
-                
+                Toast.makeText(context, "=== STOP ===" , Toast.LENGTH_LONG).show();
             }
-
+            at.stop();
+            at.release();
         }
     }
     
