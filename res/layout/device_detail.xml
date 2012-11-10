@@ -35,25 +35,32 @@
                 android:text="@string/disconnect_peer_button"
                 android:background="#eeeeee"
                  />
-            <Button
-                android:id="@+id/btn_start_client"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="5dp"
-                android:text="@string/get_file_button"
-                android:paddingLeft="5dp"
-                android:paddingRight="5dp"
-                android:visibility="gone" android:background="#eeeeee"/>
-            <Button
-                android:id="@+id/btn_start_voice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="5dp"
-                android:text="@string/send_voice"
-                android:paddingLeft="5dp"
-                android:paddingRight="5dp"
-                android:visibility="gone" android:background="#eeeeee"/>
         </LinearLayout>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            >
+			<Button
+			       android:id="@+id/btn_start_client"
+			       android:layout_width="wrap_content"
+			       android:layout_height="wrap_content"
+			       android:layout_marginRight="5dp"
+			       android:text="@string/get_file_button"
+			       android:paddingLeft="5dp"
+			       android:paddingRight="5dp"
+			       android:visibility="gone" android:background="#eeeeee"/>
+			<Button
+			    android:id="@+id/btRecord"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:layout_marginRight="5dp"
+			    android:text="@string/send_voice"
+			    android:paddingLeft="5dp"
+			    android:paddingRight="5dp"
+			    android:visibility="gone" android:background="#eeeeee"/>
+		</LinearLayout>	
         <TextView
             android:id="@+id/device_address"
             android:layout_width="match_parent"

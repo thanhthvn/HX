@@ -14,7 +14,7 @@
     <string name="empty"></string>
     <string name="yes">yes</string>
     <string name="no">no</string>
-    <string name="client_text">This device will act as a client. Click \"Send Pictures\" to send image</string>
+    <string name="client_text">This device will act as a client.</string>
     <string name="empty_message">If Wifi Direct is currently disabled, turn on from Android System Setting and then click button \"DISCOVER\" to view peer devices</string>
     <string name="p2p_off_warning">Enable P2P from system settings</string>
     <string name="group_owner_text">"Am I the Group Owner? "</string>
@@ -23,6 +23,6 @@
 	<string name="wifi_direct">Wifi Direct</string>
 	<string name="nfc">NFC</string>
 	<string name="send_file">Send File</string>
-	<string name="start">START VOICE</string>
-	<string name="stop">STOP VOICE</string>
+	<string name="start_voice">Start voice</string>
+	<string name="stop_voice">Stop voice</string>
 </resources>

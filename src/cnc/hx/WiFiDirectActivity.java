@@ -37,6 +37,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import cnc.hx.DeviceListFragment.DeviceActionListener;
+import cnc.hx.utils.WiFiDirectBroadcastReceiver;
 
 /**
  * An activity that uses WiFi Direct APIs to discover and connect with available

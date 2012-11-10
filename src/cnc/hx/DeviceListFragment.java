@@ -16,11 +16,13 @@
 
 package cnc.hx;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.ListFragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
@@ -33,9 +35,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A ListFragment that displays available peers on discovery and requests the
@@ -58,12 +57,6 @@ public class DeviceListFragment extends ListFragment implements PeerListListener
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mContentView = inflater.inflate(R.layout.device_list, null);
-        mContentView.findViewById(R.id.btn_start_voice).setOnClickListener(
-		new View.OnClickListener() {	
-			public void onClick(View v) {
-				startActivity(new Intent(getActivity(), AudioRecordActivity.class));
-			}
-		});	
         return mContentView;
     }
 
