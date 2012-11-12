@@ -1,21 +1,22 @@
 package cnc.hx.workers;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioRecord;
+import android.media.AudioTrack;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
-import android.widget.Toast;
 import cnc.hx.utils.Constants;
 import cnc.hx.utils.Utils;
 
@@ -96,47 +97,66 @@ public class ServerWorker {
     
 	private class VoiceServerAsyncTask extends AsyncTask<Void, Void, String> {
 
+		AudioTrack at;
+		//OutputStream os;
+		
         public VoiceServerAsyncTask() {
+			
         }
 
         @Override
         protected void onPreExecute() {
         	super.onPreExecute();
         	//Toast.makeText(context, "START VOICE" , Toast.LENGTH_SHORT).show();
-        	// at.play();
+        	
         }
         
         @Override
         protected String doInBackground(Void... params) {
             try {
-            	if (serverSocketVoice == null) {
+            	//if (serverSocketVoice == null) {
             		serverSocketVoice = new ServerSocket(Constants.OWNER_PORT_VOICE);
-            	}
+            	//}
                 Log.d("VoiceServerAsyncTask", "Server: Socket opened");
                 
                 Socket client = serverSocketVoice.accept();
                 Log.d("VoiceServerAsyncTask", "Server: connection done");
                 
-                String fileName = Environment.getExternalStorageDirectory()
-	                + "/cnc-hx/s-" + System.currentTimeMillis() + ".3gp";
-                final File f = new File(fileName);
-                File dirs = new File(f.getParent());
-                if (!dirs.exists()) dirs.mkdirs();
-                f.createNewFile();
-                
-                Log.d("VoiceServerAsyncTask", "server: copying files " + f.toString());
+//                String fileName = Environment.getExternalStorageDirectory()
+//	                + "/cnc-hx/s-" + System.currentTimeMillis() + ".3gp";
+//                final File f = new File(fileName);
+//                File dirs = new File(f.getParent());
+//                if (!dirs.exists()) dirs.mkdirs();
+//                f.createNewFile();
+//                Log.d("VoiceServerAsyncTask", "server: copying files " + f.toString());
+
                 InputStream is = client.getInputStream();
-                OutputStream os = new BufferedOutputStream(new FileOutputStream(f)); //new FileOutputStream(f);
-                int bufferSize = 1024;
+                // if (os == null) os = new BufferedOutputStream(new FileOutputStream(f)); //new FileOutputStream(f);
+                
+                int frequency = 44100;
+                int channelConfiguration = AudioFormat.CHANNEL_CONFIGURATION_MONO;
+                int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
+                
+                int bufferSize = AudioRecord.getMinBufferSize(frequency, 
+                		channelConfiguration, audioEncoding); 
+                Log.i("AudioRecord", "bufferSize:" + bufferSize);
                 byte[] buffer = new byte[bufferSize];
                 int len = 0;
+                at = new AudioTrack(AudioManager.STREAM_MUSIC, frequency, 
+                		channelConfiguration, audioEncoding, 4*bufferSize, AudioTrack.MODE_STREAM);
+                at.setPlaybackRate(frequency);
+                at.play();
+                int atLen = 0;
                 while ((len = is.read(buffer)) != -1) {
-                	os.write(buffer, 0, len);
-                	Log.i("OutputStream", "LENGTH:" + len);
+                	//os.write(buffer, 0, len);
+                	atLen += at.write(buffer, 0, len);
+                	Log.i("InputStream", "LENGTH:" + len);
                 }
-                if(os != null)  os.close();
-                serverSocketVoice.close();
-                return f.getAbsolutePath();
+                is.close();
+                Log.i("InputStream", "AudioTrack LEN:" + atLen);
+                at.stop();
+                at.release();
+                return null;//f.getAbsolutePath();
             } catch (IOException e) {
                 Log.e("VoiceServerAsyncTask", e.getMessage());
                 return null;
@@ -145,15 +165,17 @@ public class ServerWorker {
         
         @Override
         protected void onPostExecute(String result) {
-            if (result != null) {
-                Intent intent = new Intent();
+				try {
+					//if(os != null) os.close();
+					serverSocketVoice.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+                /*Intent intent = new Intent();
                 intent.setAction(android.content.Intent.ACTION_VIEW);
                 intent.setDataAndType(Uri.parse("file://" + result), "audio/*");
                 context.startActivity(intent);
-                Toast.makeText(context, "STOP VOICE" , Toast.LENGTH_SHORT).show();
-            }
-            //at.stop();
-            //at.release();
+                Toast.makeText(context, "STOP VOICE" , Toast.LENGTH_SHORT).show();*/
         }
 	}
 }

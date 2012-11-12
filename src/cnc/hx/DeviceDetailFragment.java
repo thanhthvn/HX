@@ -32,6 +32,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 import cnc.hx.DeviceListFragment.DeviceActionListener;
 import cnc.hx.workers.ClientWorker;
 import cnc.hx.workers.ServerWorker;
@@ -64,9 +65,6 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-    	client = new ClientWorker(getActivity());
-    	server = new ServerWorker(getActivity());
-    	
         mContentView = inflater.inflate(R.layout.device_detail, null);
         mContentView.findViewById(R.id.btn_connect).setOnClickListener(new View.OnClickListener() {
 
@@ -105,11 +103,16 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         btRecord = (Button) mContentView.findViewById(R.id.btRecord);		
         btRecord.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				Boolean isRecording = client.recordVoice();
-				if (isRecording) {
-					btRecord.setText(R.string.stop_voice);
+				if (client != null) {
+					Boolean isRecording = client.recordVoice();
+					if (isRecording) {
+						btRecord.setText(R.string.stop_voice);
+					} else {
+						btRecord.setText(R.string.start_voice);
+						//((DeviceActionListener) getActivity()).disconnect();
+					}
 				} else {
-					btRecord.setText(R.string.start_voice);
+					Toast.makeText(getActivity(), "Client is disconnect.", Toast.LENGTH_SHORT).show();
 				}
 				
 			}
@@ -127,7 +130,7 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
 	        Uri uri = data.getData();
 	        TextView statusText = (TextView) mContentView.findViewById(R.id.status_text);
 	        statusText.setText("Sending: " + uri);
-	        client.sendFile(uri, info.groupOwnerAddress.getHostAddress());
+	        client.sendFile(uri);
     	}
     }   
     
@@ -153,13 +156,17 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         // server. The file server is single threaded, single connection server
         // socket.
         host = info.groupOwnerAddress.getHostAddress();
+        
+        client = new ClientWorker(getActivity(), info.groupOwnerAddress.getHostAddress());
+    	server = new ServerWorker(getActivity());
+    	
         if (info.groupFormed && info.isGroupOwner) {
-             server.receiveFile();
+            // server.receiveFile();
              server.receiveVoice();
         } else if (info.groupFormed) {
             // The other device acts as the client. In this case, we enable the
             // get file button.
-            mContentView.findViewById(R.id.btn_start_client).setVisibility(View.VISIBLE);
+            //mContentView.findViewById(R.id.btn_start_client).setVisibility(View.VISIBLE);
             mContentView.findViewById(R.id.btRecord).setVisibility(View.VISIBLE);
             ((TextView) mContentView.findViewById(R.id.status_text)).setText(getResources().getString(R.string.client_text));
         }
