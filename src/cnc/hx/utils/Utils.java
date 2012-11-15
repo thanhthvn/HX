@@ -4,8 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import cnc.hx.WiFiDirectActivity;
-
+import android.content.Context;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.util.Log;
 
 public class Utils {
@@ -27,4 +28,14 @@ public class Utils {
         return true;
     }
 	
+	public static String getIpAddress(Context context) {
+		WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+		WifiInfo info = wifiManager.getConnectionInfo();
+		String ip = "";
+    	if (info!=null && info.getNetworkId()>-1) {
+	    	int i = info.getIpAddress();
+	    	ip = String.format("%d.%d.%d.%d", i & 0xff, i >> 8 & 0xff,i >> 16 & 0xff,i >> 24 & 0xff);
+    	}
+    	return ip;
+	}
 }

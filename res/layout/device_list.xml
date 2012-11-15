@@ -6,6 +6,32 @@
     android:layout_height="match_parent"
     android:paddingTop="3dp">
 
+    <LinearLayout
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="3dp" 
+    android:visibility="gone"
+    >
+	     <Button
+		    android:id="@+id/btn_server"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_marginRight="5dp"
+		    android:paddingLeft="5dp"
+		    android:paddingRight="5dp"
+		    android:text="Server" />
+		<Button
+		    android:id="@+id/btn_client"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_marginRight="5dp"
+		    android:paddingLeft="5dp"
+		    android:paddingRight="5dp"
+		    android:text="Client"
+		     />
+    </LinearLayout>
+            
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"

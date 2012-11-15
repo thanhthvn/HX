@@ -19,10 +19,13 @@ package cnc.hx;
 import java.util.ArrayList;
 import java.util.List;
 
+import cnc.hx.utils.Constants;
+
 import android.app.ListFragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
@@ -33,8 +36,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * A ListFragment that displays available peers on discovery and requests the
@@ -46,6 +51,7 @@ public class DeviceListFragment extends ListFragment implements PeerListListener
     ProgressDialog progressDialog = null;
     View mContentView = null;
     private WifiP2pDevice device;
+    Button btClient, btServer;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -57,9 +63,37 @@ public class DeviceListFragment extends ListFragment implements PeerListListener
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mContentView = inflater.inflate(R.layout.device_list, null);
+        
+        btServer = (Button) mContentView.findViewById(R.id.btn_server);		
+        btServer.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				startServer();
+			}
+		});
+        
+        btClient = (Button) mContentView.findViewById(R.id.btn_client);		
+        btClient.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				startClient();
+			}
+		});
+        
+        
         return mContentView;
     }
 
+    private void startServer() {
+		Intent serverIntent = new Intent(getActivity(), ServerActivity.class);
+		serverIntent.putExtra(Constants.HOST_ADDRESS, "");
+		startActivity(serverIntent);
+   	}
+
+   	private void startClient() {
+		Intent clientIntent = new Intent(getActivity(), ClientActivity.class);
+		clientIntent.putExtra(Constants.HOST_ADDRESS, "");
+		startActivity(clientIntent);
+   	}
+   
     /**
      * @return this device
      */

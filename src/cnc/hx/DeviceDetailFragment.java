@@ -16,6 +16,8 @@
 
 package cnc.hx;
 
+import java.net.UnknownHostException;
+
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -34,6 +36,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import cnc.hx.DeviceListFragment.DeviceActionListener;
+import cnc.hx.utils.Constants;
+import cnc.hx.utils.Utils;
 import cnc.hx.workers.ClientWorker;
 import cnc.hx.workers.ServerWorker;
 
@@ -53,6 +57,8 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
     
     String host;
     Button btSendFile, btRecord;
+    
+    Boolean isResume = false;
     
     ClientWorker client;
     ServerWorker server;
@@ -156,25 +162,52 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         // server. The file server is single threaded, single connection server
         // socket.
         host = info.groupOwnerAddress.getHostAddress();
+        String serverIp = Utils.getIpAddress(getActivity());
+        
+        Log.d("IP Address", "IP: " + serverIp);
+        Log.d("IP Address", "P2P IP: " + host);
         
         client = new ClientWorker(getActivity(), info.groupOwnerAddress.getHostAddress());
     	server = new ServerWorker(getActivity());
     	
         if (info.groupFormed && info.isGroupOwner) {
-            // server.receiveFile();
-             server.receiveVoice();
+        	if (!isResume) {
+	            // server.receiveFile();
+	            // server.receiveVoice();
+	        	
+	        	//startClient();
+	        	server.receiveHostIp();
+	        	isResume = true;
+        	}
         } else if (info.groupFormed) {
-            // The other device acts as the client. In this case, we enable the
-            // get file button.
-            //mContentView.findViewById(R.id.btn_start_client).setVisibility(View.VISIBLE);
-            mContentView.findViewById(R.id.btRecord).setVisibility(View.VISIBLE);
-            ((TextView) mContentView.findViewById(R.id.status_text)).setText(getResources().getString(R.string.client_text));
+        	if (!isResume) {
+	            // The other device acts as the client. In this case, we enable the
+	            // get file button.
+	            // mContentView.findViewById(R.id.btn_start_client).setVisibility(View.VISIBLE);
+	            //mContentView.findViewById(R.id.btRecord).setVisibility(View.VISIBLE);
+	            //((TextView) mContentView.findViewById(R.id.status_text)).setText(getResources().getString(R.string.client_text));
+	        	client.sendHostIp(serverIp);
+	        	startServer();
+	        	isResume = true;
+        	}
         }
 
         // hide the connect button
         mContentView.findViewById(R.id.btn_connect).setVisibility(View.GONE);
     }
+    
+    private void startServer() {
+    	 Intent serverIntent = new Intent(getActivity(), ServerActivity.class);
+         serverIntent.putExtra(Constants.HOST_ADDRESS, host);
+         startActivity(serverIntent);
+    }
 
+    private void startClient() {
+    	Intent clientIntent = new Intent(getActivity(), ClientActivity.class);
+    	clientIntent.putExtra(Constants.HOST_ADDRESS, host);
+        startActivity(clientIntent);
+    }
+    
     /**
      * Updates the UI with device data
      * 
@@ -187,6 +220,7 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         view.setText(device.deviceAddress);
         view = (TextView) mContentView.findViewById(R.id.device_info);
         view.setText(device.toString());
+        isResume = false;
     }
 
     /**
@@ -205,6 +239,7 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         mContentView.findViewById(R.id.btn_start_client).setVisibility(View.GONE);
         mContentView.findViewById(R.id.btRecord).setVisibility(View.GONE);
         this.getView().setVisibility(View.GONE);
+        isResume = false;
     }
        
 }

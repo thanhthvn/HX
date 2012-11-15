@@ -1,9 +1,11 @@
 package cnc.hx.workers;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -17,12 +19,13 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
+import android.widget.Toast;
 import cnc.hx.utils.Constants;
 import cnc.hx.utils.Utils;
 
 public class ServerWorker {
 	
-	ServerSocket serverSocketFile, serverSocketVoice;
+	ServerSocket serverSocketFile, serverSocketVoice, serverSocketText;
 	
 	Context context;
     
@@ -36,6 +39,10 @@ public class ServerWorker {
     
     public void receiveVoice() {
     	new VoiceServerAsyncTask().execute();
+    }
+    
+    public void receiveHostIp() {
+    	new MessageServerAsyncTask().execute();
     }
     
 	/**
@@ -177,5 +184,68 @@ public class ServerWorker {
                 context.startActivity(intent);
                 Toast.makeText(context, "STOP VOICE" , Toast.LENGTH_SHORT).show();*/
         }
+	}
+	
+	private class MessageServerAsyncTask extends AsyncTask<Void, Void, String> {
+
+        public MessageServerAsyncTask() {
+			
+        }
+
+        @Override
+        protected void onPreExecute() {
+        	super.onPreExecute();
+        	
+        }
+        
+        @Override
+        protected String doInBackground(Void... params) {
+            try {
+            	serverSocketText = new ServerSocket(Constants.OWNER_PORT_VOICE);
+                Log.d("MessageServerAsyncTask", "Server: Socket opened");
+                Socket client = serverSocketText.accept();
+                Log.d("MessageServerAsyncTask", "Server: connection done");
+                InputStream is = client.getInputStream();
+                String streamUrl = convertStreamToString(is);
+                Log.d("MessageServerAsyncTask", "Stream URL: " + streamUrl);
+                return streamUrl;
+            } catch (Exception e) {
+                Log.e("MessageServerAsyncTask", e.getMessage());
+                return null;
+            }
+        }
+        
+        @Override
+        protected void onPostExecute(String streamUrl) {
+				try {
+					serverSocketText.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				if (streamUrl != null) {
+					Toast.makeText(context, "PLAY VIDEO STREAM: rtsp://" + streamUrl + ":8086" , Toast.LENGTH_LONG).show();
+	                try {
+						Intent intent = new Intent();
+		                intent.setAction(android.content.Intent.ACTION_VIEW);
+		                intent.setDataAndType(Uri.parse("rtsp://" + streamUrl + ":8086"), "video/*");
+		                context.startActivity(intent);
+	                } catch (Exception e) {
+	                	Toast.makeText(context, "Please install video player to play stream video." , Toast.LENGTH_LONG).show();
+	                	
+	                	e.printStackTrace();
+	                }
+				}
+        }
+	}
+	
+	public static String convertStreamToString(InputStream is) throws Exception {
+	    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+	    StringBuilder sb = new StringBuilder();
+	    String line = null;
+	    while ((line = reader.readLine()) != null) {
+	        sb.append(line);
+	    }
+	    is.close();
+	    return sb.toString();
 	}
 }

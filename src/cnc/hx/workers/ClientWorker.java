@@ -2,8 +2,8 @@ package cnc.hx.workers;
 
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -15,7 +15,6 @@ import android.media.AudioTrack;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.util.Log;
 import cnc.hx.utils.Constants;
 import cnc.hx.utils.FileTransferService;
@@ -50,6 +49,10 @@ public class ClientWorker {
     		stopRecording();
     	}
     	return isRecording;
+    }
+    
+    public void sendHostIp(String ipAdress) {
+    	new messageTask().execute(ipAdress);
     }
     
     private void startRecording() {
@@ -122,9 +125,8 @@ public class ClientWorker {
                 DataOutputStream dataOutputStreamInstance = new DataOutputStream (buff);
                 
                 recorder.startRecording();
-                int bufferRead = 0;
                 while (isRecording) {
-                    bufferRead = recorder.read(buffer, 0, bufferSize);
+                    recorder.read(buffer, 0, bufferSize);
                     dataOutputStreamInstance.write(buffer);
 	              }
                 if (recorder != null) {
@@ -141,6 +143,44 @@ public class ClientWorker {
  		
  		@Override
  		protected void onPostExecute(Integer result) {
+			super.onPostExecute(result);
+			try {
+				socket.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+ 		}
+ 		
+ 	}
+ 	
+ 	class messageTask extends AsyncTask<String, Void, Void> {
+ 		
+ 		@Override
+ 		protected void onPreExecute() {
+ 			super.onPreExecute();
+ 		}
+ 		@Override
+ 		protected Void doInBackground(String... msgs) {
+ 			try {
+				socket = new Socket();
+				socket.bind(null);
+ 				Log.d("sendMessageTask", "Opening client socket");
+ 				socket.connect((new InetSocketAddress(host, Constants.OWNER_PORT_VOICE)), 5000);
+ 				Log.d("sendMessageTask", "Client socket - " + socket.isConnected());
+ 				if (msgs[0] != null) {
+ 					OutputStream os = socket.getOutputStream();
+	 				byte[] stringByte = msgs[0].getBytes();
+	 				os.write(stringByte);
+	 				os.close();
+ 				}
+ 			} catch (IOException e) {
+ 				e.printStackTrace();
+ 			}
+ 			return null;
+ 		}
+ 		
+ 		@Override
+ 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
 			try {
 				socket.close();

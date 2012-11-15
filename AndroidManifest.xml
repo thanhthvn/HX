@@ -13,6 +13,10 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.CAMERA"></uses-permission>
+    <uses-permission android:name="android.permission.WAKE_LOCK"></uses-permission>   
+    <uses-feature android:name="android.hardware.camera" />
+<!--     <uses-feature android:name="android.hardware.camera.autofocus" /> -->
     <!-- Google Play filtering --> 
     <uses-feature android:name="android.hardware.wifi.direct" android:required="true"/>
     
@@ -36,6 +40,14 @@
         </activity>
         <activity
             android:name=".AudioRecordActivity"
+            android:label="@string/title_activity_main">
+        </activity>
+        <activity
+            android:name=".ServerActivity"
+            android:label="@string/title_activity_main">
+        </activity>
+        <activity
+            android:name=".ClientActivity"
             android:label="@string/title_activity_main">
         </activity>
         <!-- Used for transferring files  after a successful connection -->
