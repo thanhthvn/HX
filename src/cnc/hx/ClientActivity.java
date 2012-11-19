@@ -54,6 +54,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
@@ -100,8 +101,7 @@ public class ClientActivity extends Activity implements OnCompletionListener, On
         layoutControl = (RelativeLayout)findViewById(R.id.control);
         progressBar = (ProgressBar)findViewById(R.id.progress);
         
-        host = getIntent().getStringExtra(Constants.HOST_ADDRESS);
-        if (host != null) editTextIP.setText(host);
+        
         
         audioStream = new MediaPlayer();
         
@@ -114,6 +114,9 @@ public class ClientActivity extends Activity implements OnCompletionListener, On
         		layoutForm.setVisibility(View.GONE);
         		progressBar.setVisibility(View.VISIBLE);
         		getCurrentConfiguration();
+        		InputMethodManager imm = 
+        				(InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        		imm.hideSoftInputFromWindow(editTextIP.getWindowToken(), 0);
 			}
 		});
         
@@ -184,6 +187,13 @@ public class ClientActivity extends Activity implements OnCompletionListener, On
         settings = PreferenceManager.getDefaultSharedPreferences(this);
         editTextIP.setText(settings.getString("last_server_ip", "10.0.2.23"));
         
+        host = getIntent().getStringExtra(Constants.HOST_ADDRESS);
+        if (host != null) {
+        	if (!host.isEmpty()) {
+	        	editTextIP.setText(host);
+	        	findViewById(R.id.button_connect).performClick();
+        	}
+        }
     }
     
 	/** Fetch the current streaming configuration of the remote phone **/
@@ -298,7 +308,7 @@ public class ClientActivity extends Activity implements OnCompletionListener, On
 				br = Integer.parseInt(m.group(1));
 			} catch (Exception ignore) {}
 
-			videoParameters += ((String)((Spinner)findViewById(spinners[3])).getSelectedItem()).equals("H.264")?"h264":"h263";
+			videoParameters += "h264";//((String)((Spinner)findViewById(spinners[3])).getSelectedItem()).equals("H.264")?"h264":"h263";
 			videoParameters += "="+br+"-"+fps+"-"+resX+"-"+resY;
 		} else {
 			videoParameters = "novideo";
@@ -318,15 +328,20 @@ public class ClientActivity extends Activity implements OnCompletionListener, On
 		
 		// Start video streaming
 		if (videoParameters.length()>0) {
-			videoView = new MyVideoView(this);
-			videoView.setLayoutParams(new LinearLayout.LayoutParams(
-					LinearLayout.LayoutParams.FILL_PARENT,
-					LinearLayout.LayoutParams.FILL_PARENT));
-			layoutContainer.addView(videoView);
-			videoView.setOnPreparedListener(this);
-			videoView.setOnCompletionListener(this);
-			videoView.setVideoURI(Uri.parse("rtsp://"+editTextIP.getText().toString()+":8086/"+(videoParameters.length()>0?("?"+videoParameters):"")));
-			videoView.requestFocus();
+			try {
+				videoView = new MyVideoView(this);
+				videoView.setLayoutParams(new LinearLayout.LayoutParams(
+						LinearLayout.LayoutParams.FILL_PARENT,
+						LinearLayout.LayoutParams.FILL_PARENT));
+				layoutContainer.addView(videoView);
+				videoView.setOnPreparedListener(this);
+				videoView.setOnCompletionListener(this);
+				videoView.setVideoURI(Uri.parse("rtsp://"+editTextIP.getText().toString()+":8086/"+(videoParameters.length()>0?("?"+videoParameters):"")));
+				videoView.requestFocus();
+			} catch (Exception e) {
+				Log.e(TAG,"connectToServer:videoView: " +e.getMessage());
+				e.printStackTrace();
+			}
 		}
 		
 		// Start audio streaming
@@ -342,12 +357,12 @@ public class ClientActivity extends Activity implements OnCompletionListener, On
 				});
 				audioStream.prepareAsync();
 			} catch (Exception e) {
-				Log.e(TAG,e.getMessage());
+				Log.e(TAG,"connectToServer:audioStream: " +e.getMessage());
 				e.printStackTrace();
 			} 
 		}
 		
-		Log.e(TAG,"rtsp://"+editTextIP.getText().toString()+":8086"+(videoParameters.length()>0?("?"+videoParameters):""));
+		Log.d(TAG,"connectToServer: rtsp://"+editTextIP.getText().toString()+":8086"+(videoParameters.length()>0?("?"+videoParameters):""));
 		
 	}
 	
@@ -393,7 +408,11 @@ public class ClientActivity extends Activity implements OnCompletionListener, On
 			public void run() {
 				progressBar.setVisibility(View.GONE);
 				layoutControl.setVisibility(View.VISIBLE);
-				videoView.start();
+				try {
+					videoView.start();
+				} catch (Exception e) {
+					Log.e("onPrepared", e.getMessage());
+				} 
 			}
 		});
 	}

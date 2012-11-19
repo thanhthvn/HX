@@ -8,12 +8,12 @@
         android:layout_width="match_parent"
         android:id="@+id/linearLayout1"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="horizontal">
         <fragment
             class="cnc.hx.DeviceListFragment"
             android:id="@+id/frag_list"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/phone_list_height">
+            android:layout_width="250dp"
+            android:layout_height="match_parent">
             <!-- Preview: layout=@layout/row_devices -->
         </fragment>
         <fragment

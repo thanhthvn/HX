@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="white">#ffffff</color>
     <color name="status_bar_color">#FF000000</color>
     <color name="layout_border_color">#FF111111</color>
+    <color name="bgcolor">#345fa4</color>
+    <color name="button_bg">#64cc21</color>
+    <color name="button_color">#9f3c1c</color>
+    <color name="time_bg">#8d9094</color>
+    <color name="panel_bg">#242583</color>
 </resources>

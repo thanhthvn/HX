@@ -9,78 +9,58 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center" />
-   
-	<RelativeLayout
-	    android:layout_width="match_parent"
-	    android:layout_height="match_parent" >
 
-	    <LinearLayout
-	        android:id="@+id/linearLayout1"
-	        android:layout_width="match_parent"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentBottom="true"
-	        android:layout_gravity="center"
-	        android:gravity="center"
-	        android:orientation="vertical" >
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
 
+        <LinearLayout
+            android:id="@+id/linearLayout1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:gravity="center"
+            android:orientation="horizontal" >
 
-	        <LinearLayout
-	            android:layout_width="match_parent"
-	            android:layout_height="wrap_content" 
-	            android:orientation="vertical"
-	            android:gravity="center"
-	            >
-	            <TextView
-	                android:id="@+id/advice"
-	                android:layout_width="200dp"
-	                android:layout_height="wrap_content"
-	                android:layout_gravity="center"
-	                android:gravity="center"
-	                android:text="@string/warning"
-	                android:textColor="#DD1111"
-	                android:textSize="20dp" />
-                <TextView
-                        android:id="@+id/line1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="10dp"
-                        android:textColor="@android:color/white" />
-                 <Button
-                        android:id="@+id/btStop"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/stop_stream" /> 
-	             
-	        </LinearLayout>
+            <ImageView
+                android:id="@+id/btStop"
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:contentDescription="@string/stop_stream"
+                android:padding="5dp"
+                android:src="@drawable/stop" />
 
-	        <RelativeLayout
-	            android:layout_width="wrap_content"
-	            android:layout_height="wrap_content"
-	            android:layout_gravity="center"
-	            android:gravity="center"
-	            android:paddingTop="20dp"
-	            android:visibility="gone" >
+            <ImageView
+                android:id="@+id/button_settings"
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:contentDescription="@string/options"
+                android:padding="7dp"
+                android:src="@drawable/settings" 
+                android:visibility="gone"
+                />
+        </LinearLayout>
 
-	            <!-- Settings -->
+        <TextView
+            android:id="@+id/advice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/linearLayout1"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="24dp"
+            android:gravity="center"
+            android:text="@string/warning"
+            android:visibility="gone"
+            android:textColor="#DD1111" />
 
-	            <ImageView
-	                android:id="@+id/button_settings"
-	                android:layout_width="55dp"
-	                android:layout_height="55dp"
-	                android:layout_alignParentLeft="true"
-	                android:padding="7dp"
-	                android:src="@drawable/settings" />
+        <TextView
+            android:id="@+id/line1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/linearLayout1"
+            android:layout_centerHorizontal="true"
+            android:textColor="@android:color/white" />
 
-	            <ImageView
-	                android:id="@+id/button_about"
-	                android:layout_width="55dp"
-	                android:layout_height="55dp"
-	                android:layout_toRightOf="@id/button_settings"
-	                android:padding="7dp"
-	                android:src="@drawable/about" />
-	        </RelativeLayout>
-	    </LinearLayout>
-	    
-	</RelativeLayout>
-    
+    </RelativeLayout>
+
 </FrameLayout>

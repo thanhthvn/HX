@@ -20,6 +20,7 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
+import cnc.hx.ClientActivity;
 import cnc.hx.utils.Constants;
 import cnc.hx.utils.Utils;
 
@@ -224,7 +225,10 @@ public class ServerWorker {
 				}
 				if (streamUrl != null) {
 					Toast.makeText(context, "PLAY VIDEO STREAM: rtsp://" + streamUrl + ":8086" , Toast.LENGTH_LONG).show();
-	                try {
+					Intent clientIntent = new Intent(context, ClientActivity.class);
+			    	clientIntent.putExtra(Constants.HOST_ADDRESS, streamUrl);
+			    	context.startActivity(clientIntent);
+					/*try {
 						Intent intent = new Intent();
 		                intent.setAction(android.content.Intent.ACTION_VIEW);
 		                intent.setDataAndType(Uri.parse("rtsp://" + streamUrl + ":8086"), "video/*");
@@ -233,7 +237,7 @@ public class ServerWorker {
 	                	Toast.makeText(context, "Please install video player to play stream video." , Toast.LENGTH_LONG).show();
 	                	
 	                	e.printStackTrace();
-	                }
+	                } */
 				}
         }
 	}

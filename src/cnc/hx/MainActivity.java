@@ -16,19 +16,13 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         btWifi = (Button) findViewById(R.id.btWifi);
-        btNfc = (Button) findViewById(R.id.btNfc);
 
         btWifi.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				startActivity(new Intent(MainActivity.this, WiFiDirectActivity.class));
 			}
 		});
-        
-        btNfc.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				
-			}
-		});
+
     }
 
     @Override

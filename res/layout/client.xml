@@ -25,7 +25,9 @@
 	        android:imeActionLabel="server_ip"
 	        android:id="@+id/server_ip"
 			android:layout_centerVertical="true"
-	        android:layout_centerHorizontal="true" />
+	        android:layout_centerHorizontal="true"
+	        android:inputType="phone"
+	         />
 	    	    
 	    <Button
 	        android:layout_marginTop="20dp"
@@ -58,13 +60,15 @@
 	            android:layout_width="40dp"
 	            android:layout_height="40dp"
 	            android:layout_marginRight="30dp"
-	            android:background="@drawable/ic_launcher" />
+	            android:background="@drawable/settings"
+	            android:visibility="visible"
+	             />
 
 	        <ImageButton
 	            android:id="@+id/button_stop"
 	            android:layout_width="40dp"
 	            android:layout_height="40dp"
-	            android:background="@drawable/ic_launcher" />
+	            android:background="@drawable/stop" />
 	    </LinearLayout>
 
 	</RelativeLayout>

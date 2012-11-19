@@ -175,7 +175,7 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
 	            // server.receiveFile();
 	            // server.receiveVoice();
 	        	
-	        	//startClient();
+	        	// startClient();
 	        	server.receiveHostIp();
 	        	isResume = true;
         	}

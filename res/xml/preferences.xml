@@ -8,7 +8,7 @@
         <CheckBoxPreference
                 android:key="stream_audio"
                 android:title="Sound streaming"
-                android:defaultValue="false"
+                android:defaultValue="true"
                 android:summary="Enable/Disable audio streaming" />
 
         <ListPreference
@@ -33,7 +33,7 @@
         <ListPreference
             android:title="Video encoder"
             android:key="video_encoder"
-            android:defaultValue="1"
+            android:defaultValue="2"
             android:summary="Two video compression algorithms are available: H.263 and H.264"
             android:entries="@array/videoEncoderArray"
             android:entryValues="@array/videoEncoderValues" />
@@ -41,7 +41,7 @@
         <ListPreference
             android:title="Resolution"
             android:key="video_resolution"
-            android:defaultValue="640x480"
+            android:defaultValue="320x240"
             android:entries="@array/videoResolutionArray"
             android:entryValues="@array/videoResolutionArray" />
                 

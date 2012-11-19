@@ -25,7 +25,10 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".WiFiDirectActivity"
+            android:theme="@android:style/Theme.NoTitleBar"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden"
+            android:name=".MainActivity"
             android:label="@string/title_activity_main">
             <intent-filter>
                 <action
@@ -34,8 +37,11 @@
                     android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".MainActivity"
+        <activity 
+        
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden"
+            android:name=".WiFiDirectActivity"
             android:label="@string/title_activity_main">
         </activity>
         <activity
@@ -43,11 +49,17 @@
             android:label="@string/title_activity_main">
         </activity>
         <activity
+            android:theme="@android:style/Theme.NoTitleBar"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden"
             android:name=".ServerActivity"
             android:label="@string/title_activity_main">
         </activity>
         <activity
+            android:theme="@android:style/Theme.NoTitleBar"
             android:name=".ClientActivity"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden"
             android:label="@string/title_activity_main">
         </activity>
         <!-- Used for transferring files  after a successful connection -->

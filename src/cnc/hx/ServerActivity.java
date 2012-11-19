@@ -51,6 +51,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.pm.ActivityInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
@@ -89,14 +90,13 @@ public class ServerActivity extends Activity implements OnSharedPreferenceChange
     private SurfaceHolder holder;
     private SurfaceView camera;
     private TextView line1, signWifi;
-    private ImageView buttonSettings, buttonClient;
+    private ImageView btStop, buttonSettings, buttonClient;
     private Context context;
     private Animation pulseAnimation;
-    Button btStop;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR | ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         setContentView(R.layout.server);
 
         camera = (SurfaceView)findViewById(R.id.smallcameraview);
@@ -131,7 +131,7 @@ public class ServerActivity extends Activity implements OnSharedPreferenceChange
         rtspServer = new RtspServer(8086, handler);
         httpServer = new CustomHttpServer(8080, this.getApplicationContext(), handler);
 
-        btStop = (Button) findViewById(R.id.btStop);
+        btStop = (ImageView) findViewById(R.id.btStop);
         btStop.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 	            stopServer();
