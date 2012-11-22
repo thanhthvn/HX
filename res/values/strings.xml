@@ -22,13 +22,17 @@
     <string name="label_peers">Peer Devices</string>
 	<string name="wifi_direct">Wifi Direct</string>
 	<string name="nfc">NFC</string>
-	<string name="connect_on_off">Connect \nOn/Off</string>
+	
 	<string name="send_file">Send File</string>
 	<string name="start_voice">Start voice</string>
 	<string name="stop_voice">Stop voice</string>
 	<string name="app_desc">Turn your smartphone into a mobile telecom</string>
 	
-	 <string name="exit">Exit</string>
+	<string name="buzzer">Buzzer</string>
+	<string name="av_on_off">Audio Video On/Off</string>
+	<string name="settings_menu">Settings Menu</string>
+	<string name="connect_on_off">Connect On/Off</string>
+	<string name="exit">Exit</string>
 	
 	<string name="options">Options</string>
     <string name="quit">Quit</string>

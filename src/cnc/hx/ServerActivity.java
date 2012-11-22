@@ -40,6 +40,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 
+import cnc.hx.utils.Constants;
+
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -93,12 +95,15 @@ public class ServerActivity extends Activity implements OnSharedPreferenceChange
     private ImageView btStop, buttonSettings, buttonClient;
     private Context context;
     private Animation pulseAnimation;
+    private String host;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR | ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         setContentView(R.layout.server);
 
+        host = getIntent().getStringExtra(Constants.HOST_ADDRESS);
+        
         camera = (SurfaceView)findViewById(R.id.smallcameraview);
         context = this.getApplicationContext();
         line1 = (TextView)findViewById(R.id.line1);
@@ -128,7 +133,7 @@ public class ServerActivity extends Activity implements OnSharedPreferenceChange
         		Integer.parseInt(settings.getString("video_framerate", "0")), 
         		Integer.parseInt(settings.getString("video_bitrate", "0"))*1000));
         
-        rtspServer = new RtspServer(8086, handler);
+        rtspServer = new RtspServer(Constants.RTSP_PORT, handler);
         httpServer = new CustomHttpServer(8080, this.getApplicationContext(), handler);
 
         btStop = (ImageView) findViewById(R.id.btStop);
@@ -184,7 +189,7 @@ public class ServerActivity extends Activity implements OnSharedPreferenceChange
     	}
     	else if (key.equals("enable_rtsp")) {
     		if (sharedPreferences.getBoolean("enable_rtsp", true)) {
-    			if (rtspServer == null) rtspServer = new RtspServer(8086, handler);
+    			if (rtspServer == null) rtspServer = new RtspServer(Constants.RTSP_PORT, handler);
     		} else {
     			if (rtspServer != null) rtspServer = null;
     		}

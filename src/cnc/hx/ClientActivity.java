@@ -336,7 +336,7 @@ public class ClientActivity extends Activity implements OnCompletionListener, On
 				layoutContainer.addView(videoView);
 				videoView.setOnPreparedListener(this);
 				videoView.setOnCompletionListener(this);
-				videoView.setVideoURI(Uri.parse("rtsp://"+editTextIP.getText().toString()+":8086/"+(videoParameters.length()>0?("?"+videoParameters):"")));
+				videoView.setVideoURI(Uri.parse("rtsp://"+editTextIP.getText().toString()+":" + Constants.RTSP_PORT +"/"+(videoParameters.length()>0?("?"+videoParameters):"")));
 				videoView.requestFocus();
 			} catch (Exception e) {
 				Log.e(TAG,"connectToServer:videoView: " +e.getMessage());
@@ -348,7 +348,7 @@ public class ClientActivity extends Activity implements OnCompletionListener, On
 		if (audioParameters.length()>0) {
 			try {
 				audioStream.reset();
-				audioStream.setDataSource(this, Uri.parse("rtsp://"+editTextIP.getText().toString()+":8086/"+(audioParameters.length()>0?("?"+audioParameters):"")));
+				audioStream.setDataSource(this, Uri.parse("rtsp://"+editTextIP.getText().toString()+":" + Constants.RTSP_PORT +"/"+(audioParameters.length()>0?("?"+audioParameters):"")));
 				audioStream.setAudioStreamType(AudioManager.STREAM_MUSIC);
 				audioStream.setOnPreparedListener(new OnPreparedListener() {
 					public void onPrepared(MediaPlayer mp) {
@@ -362,7 +362,7 @@ public class ClientActivity extends Activity implements OnCompletionListener, On
 			} 
 		}
 		
-		Log.d(TAG,"connectToServer: rtsp://"+editTextIP.getText().toString()+":8086"+(videoParameters.length()>0?("?"+videoParameters):""));
+		Log.d(TAG,"connectToServer: rtsp://"+editTextIP.getText().toString()+":" + Constants.RTSP_PORT + (videoParameters.length()>0?("?"+videoParameters):""));
 		
 	}
 	

@@ -21,11 +21,10 @@ import cnc.hx.utils.FileTransferService;
 
 public class ClientWorker {
 	
-	private AudioRecord recorder = null;
+	private AudioRecord recorder;
     private boolean isRecording = false;
     String host;
     Context context;
-    Socket socket;
     
     public ClientWorker(Context context, String host) {
     	this.context = context;
@@ -45,8 +44,10 @@ public class ClientWorker {
     public Boolean recordVoice() {
     	if (!isRecording) {
     		startRecording();
+    		Log.d("recordVoice", "startRecording()");
     	} else {
     		stopRecording();
+    		Log.d("recordVoice", "stopRecording()");
     	}
     	return isRecording;
     }
@@ -57,15 +58,12 @@ public class ClientWorker {
     
     private void startRecording() {
  		try {
- 			//String dirName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/cnc-hx";
- 			//String fileName = dirName +  "/hx-client-" + System.currentTimeMillis() + ".3gp"; 
-             //File dirs = new File(dirName);
-             //if (!dirs.exists()) dirs.mkdirs();
-             //f.createNewFile();
  			if (!isRecording && recorder != null) {
  				recorder.startRecording();
+ 				Log.d("startRecording()", "recorder.startRecording()");
  			} else {
- 				new recordTask().execute();
+ 				new RecordTask().execute();
+ 				Log.d("startRecording()", "recordTask().execute()");
  			}
  			isRecording = true;
  		} catch (IllegalStateException e) {
@@ -79,37 +77,30 @@ public class ClientWorker {
  		try {
  			if (recorder != null) {
  		 		recorder.stop();
- 		 		//recorder.release();
- 		 		//recorder = null;
  	    	}
  	 		isRecording = false;
- 			//if (socket !=null) 
- 			//	if (socket.isConnected()) 
- 			//		socket.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
  	}
     
- 	class recordTask extends AsyncTask<Void, Integer, Integer> {
+ 	class RecordTask extends AsyncTask<Void, Void, Void> {
  		
  		@Override
  		protected void onPreExecute() {
  			super.onPreExecute();
+ 			Log.d("RecordTask", "onPreExecute()");
  		}
+ 		
  		@Override
- 		protected Integer doInBackground(Void... p) {
+ 		protected Void doInBackground(Void... params) {
+ 			Log.d("RecordTask", "doInBackground(...)");
+ 			Socket socket = new Socket();
  			try {
- 				//if (socket == null) {
- 					socket = new Socket();
- 					socket.bind(null);
- 				//}
- 				//if (!socket.isConnected()) {
-	 				Log.d("recordTask", "Opening client socket");
-	 				socket.connect((new InetSocketAddress(host, Constants.OWNER_PORT_VOICE)), 5000);
-	 				Log.d("recordTask", "Client socket - " + socket.isConnected());
- 				//}
- 				// InputStream is = recorder.getOutputStream();
+				socket.bind(null);
+ 				Log.d("recordTask", "Opening client socket, host: " + host);
+ 				socket.connect((new InetSocketAddress(host, Constants.OWNER_PORT_VOICE)), 5000);
+ 				Log.d("recordTask", "Client socket - " + socket.isConnected());
  				
  				int frequency = 44100;
                 int channelConfiguration = AudioFormat.CHANNEL_CONFIGURATION_MONO;
@@ -133,24 +124,27 @@ public class ClientWorker {
 	                recorder.stop();
 	                recorder.release();
                 }
-                
- 	 			return 1;
- 			} catch (IOException e) {
+ 			} catch (Exception e) {
  				e.printStackTrace();
- 			}
- 			return 0;
+ 			} finally {
+				if (socket != null) {
+					if (socket.isConnected()) {
+						try {
+							socket.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+			return null;
  		}
  		
  		@Override
- 		protected void onPostExecute(Integer result) {
+ 		protected void onPostExecute(Void result) {
+ 			Log.d("RecordTask", "onPostExecute");
 			super.onPostExecute(result);
-			try {
-				socket.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
  		}
- 		
  	}
  	
  	class messageTask extends AsyncTask<String, Void, Void> {
@@ -161,8 +155,8 @@ public class ClientWorker {
  		}
  		@Override
  		protected Void doInBackground(String... msgs) {
+ 			Socket socket = new Socket();
  			try {
-				socket = new Socket();
 				socket.bind(null);
  				Log.d("sendMessageTask", "Opening client socket");
  				socket.connect((new InetSocketAddress(host, Constants.OWNER_PORT_VOICE)), 5000);
@@ -173,20 +167,26 @@ public class ClientWorker {
 	 				os.write(stringByte);
 	 				os.close();
  				}
- 			} catch (IOException e) {
+ 			} catch (Exception e) {
  				e.printStackTrace();
- 			}
+ 			} finally {
+				if (socket != null) {
+					if (socket.isConnected()) {
+						try {
+							socket.close();
+						} catch (IOException e) {
+							// Give up
+							e.printStackTrace();
+						}
+					}
+				}
+			}
  			return null;
  		}
  		
  		@Override
  		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
-			try {
-				socket.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
  		}
  		
  	}

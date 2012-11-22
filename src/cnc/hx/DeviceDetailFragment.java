@@ -16,7 +16,6 @@
 
 package cnc.hx;
 
-import java.net.UnknownHostException;
 
 import android.app.Fragment;
 import android.app.ProgressDialog;
@@ -55,7 +54,9 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
     
     Intent voiceServiceIntent;
     
-    String host;
+    public static final String IP_SERVER = "192.168.49.1";
+    
+    String host, serverIp, clientIP = IP_SERVER;
     Button btSendFile, btRecord;
     
     Boolean isResume = false;
@@ -109,16 +110,13 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         btRecord = (Button) mContentView.findViewById(R.id.btRecord);		
         btRecord.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				if (client != null) {
-					Boolean isRecording = client.recordVoice();
-					if (isRecording) {
-						btRecord.setText(R.string.stop_voice);
-					} else {
-						btRecord.setText(R.string.start_voice);
-						//((DeviceActionListener) getActivity()).disconnect();
-					}
+				if (client == null) client = new ClientWorker(getActivity(), clientIP);
+				Boolean isRecording = client.recordVoice();
+				if (isRecording) {
+					btRecord.setText(R.string.stop_voice);
 				} else {
-					Toast.makeText(getActivity(), "Client is disconnect.", Toast.LENGTH_SHORT).show();
+					btRecord.setText(R.string.start_voice);
+					//((DeviceActionListener) getActivity()).disconnect();
 				}
 				
 			}
@@ -148,6 +146,9 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         this.info = info;
         this.getView().setVisibility(View.VISIBLE);
 
+        host = info.groupOwnerAddress.getHostAddress();
+        serverIp = Utils.getIpAddress(getActivity());
+        
         // The owner IP is now known.
         TextView view = (TextView) mContentView.findViewById(R.id.group_owner);
         view.setText(getResources().getString(R.string.group_owner_text)
@@ -156,49 +157,43 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
 
         // InetAddress from WifiP2pInfo struct.
         view = (TextView) mContentView.findViewById(R.id.device_info);
-        view.setText("Group Owner IP - " + info.groupOwnerAddress.getHostAddress());
-
+        view.setText("Group Owner IP - " + host);
+        
+        Log.d("P2P IP", "# " + host);
+        Log.d("Wifi IP", "# " + serverIp);
+        
+        getClientIp();
+        
         // After the group negotiation, we assign the group owner as the file
         // server. The file server is single threaded, single connection server
         // socket.
-        host = info.groupOwnerAddress.getHostAddress();
-        String serverIp = Utils.getIpAddress(getActivity());
         
-        Log.d("IP Address", "IP: " + serverIp);
-        Log.d("IP Address", "P2P IP: " + host);
+        server = new ServerWorker(getActivity());
         
-        client = new ClientWorker(getActivity(), info.groupOwnerAddress.getHostAddress());
-    	server = new ServerWorker(getActivity());
-    	
-        if (info.groupFormed && info.isGroupOwner) {
-        	if (!isResume) {
-	            // server.receiveFile();
-	            // server.receiveVoice();
-	        	
-	        	// startClient();
-	        	server.receiveHostIp();
-	        	isResume = true;
-        	}
-        } else if (info.groupFormed) {
-        	if (!isResume) {
-	            // The other device acts as the client. In this case, we enable the
-	            // get file button.
-	            // mContentView.findViewById(R.id.btn_start_client).setVisibility(View.VISIBLE);
-	            //mContentView.findViewById(R.id.btRecord).setVisibility(View.VISIBLE);
-	            //((TextView) mContentView.findViewById(R.id.status_text)).setText(getResources().getString(R.string.client_text));
-	        	client.sendHostIp(serverIp);
-	        	startServer();
-	        	isResume = true;
-        	}
-        }
-
+    	if (!isResume) {
+    		if (info.groupFormed || info.isGroupOwner) {
+    			//server.receiveVoice();
+    		}
+	        if (info.groupFormed && info.isGroupOwner) {
+	        	server.receiveVoice(); // server receive voice
+	        	Log.d("ConnectionInfo", "groupFormed && isGroupOwner");
+	        } else if (info.groupFormed) {
+	        	//server.receiveVoice(); // client receive voice
+	        	mContentView.findViewById(R.id.btRecord).setVisibility(View.VISIBLE);
+	        	((TextView) mContentView.findViewById(R.id.status_text)).setText(getResources().getString(R.string.client_text));
+	        	Log.d("ConnectionInfo", "isGroupOwner");
+	        }
+			isResume = true;
+			Log.d("onConnectionInfoAvailable", "server.receiveVoice();isResume");
+    	}
+	    	
         // hide the connect button
         mContentView.findViewById(R.id.btn_connect).setVisibility(View.GONE);
     }
     
     private void startServer() {
     	 Intent serverIntent = new Intent(getActivity(), ServerActivity.class);
-         serverIntent.putExtra(Constants.HOST_ADDRESS, host);
+         serverIntent.putExtra(Constants.HOST_ADDRESS, host); // host
          startActivity(serverIntent);
     }
 
@@ -208,6 +203,19 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         startActivity(clientIntent);
     }
     
+    private void getClientIp() {
+        if (device != null) {
+        	String localIP = Utils.getLocalIPAddress();
+            Log.d("Local IP", "# " + localIP);
+        	// Trick to find the ip in the file /proc/net/arp
+			String client_mac_fixed = new String(device.deviceAddress).replace("99", "19");
+			String clientIPFromMac = Utils.getIPFromMac(client_mac_fixed);
+			Log.d("#clientIPFromMac", "# " + clientIPFromMac);
+			if(localIP != null && clientIPFromMac != null) {
+				if(localIP.equals(IP_SERVER)) clientIP = clientIPFromMac;
+			}
+        }
+    }
     /**
      * Updates the UI with device data
      * 
@@ -220,7 +228,13 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         view.setText(device.deviceAddress);
         view = (TextView) mContentView.findViewById(R.id.device_info);
         view.setText(device.toString());
-        isResume = false;
+        if (info != null) {
+			if (info.groupFormed || info.isGroupOwner) {
+				getClientIp();
+				mContentView.findViewById(R.id.btRecord).setVisibility(View.VISIBLE);
+			}
+		}
+        //isResume = false;
     }
 
     /**

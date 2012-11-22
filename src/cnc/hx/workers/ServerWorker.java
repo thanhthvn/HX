@@ -26,7 +26,6 @@ import cnc.hx.utils.Utils;
 
 public class ServerWorker {
 	
-	ServerSocket serverSocketFile, serverSocketVoice, serverSocketText;
 	
 	Context context;
     
@@ -52,12 +51,6 @@ public class ServerWorker {
      */
     private class FileServerAsyncTask extends AsyncTask<Void, Void, String> {
 
-        //private TextView statusText;
-
-        /**
-         * @param context
-         * @param statusText
-         */
         public FileServerAsyncTask() {
             // this.statusText = (TextView) statusText;
         }
@@ -65,9 +58,7 @@ public class ServerWorker {
         @Override
         protected String doInBackground(Void... params) {
             try {
-            	if (serverSocketFile == null) {
-            		serverSocketFile = new ServerSocket(Constants.OWNER_PORT_FILE);
-            	}
+            	ServerSocket serverSocketFile = new ServerSocket(Constants.OWNER_PORT_FILE);
                 Log.d("FileServerAsyncTask", "Server: Socket opened");
                 Socket client = serverSocketFile.accept();
                 Log.d("FileServerAsyncTask", "Server: connection done");
@@ -89,11 +80,9 @@ public class ServerWorker {
             }
         }
 
-
         @Override
         protected void onPostExecute(String result) {
             if (result != null) {
-                // statusText.setText("File copied - " + result);
                 Intent intent = new Intent();
                 intent.setAction(android.content.Intent.ACTION_VIEW);
                 intent.setDataAndType(Uri.parse("file://" + result), "image/*");
@@ -106,7 +95,6 @@ public class ServerWorker {
 	private class VoiceServerAsyncTask extends AsyncTask<Void, Void, String> {
 
 		AudioTrack at;
-		//OutputStream os;
 		
         public VoiceServerAsyncTask() {
 			
@@ -115,31 +103,20 @@ public class ServerWorker {
         @Override
         protected void onPreExecute() {
         	super.onPreExecute();
-        	//Toast.makeText(context, "START VOICE" , Toast.LENGTH_SHORT).show();
+        	Log.d("VoiceServerAsyncTask", "onPreExecute");
         	
         }
         
         @Override
         protected String doInBackground(Void... params) {
+        	Log.d("VoiceServerAsyncTask", "doInBackground");
             try {
-            	//if (serverSocketVoice == null) {
-            		serverSocketVoice = new ServerSocket(Constants.OWNER_PORT_VOICE);
-            	//}
+            	ServerSocket serverSocketVoice = new ServerSocket(Constants.OWNER_PORT_VOICE);
                 Log.d("VoiceServerAsyncTask", "Server: Socket opened");
-                
                 Socket client = serverSocketVoice.accept();
                 Log.d("VoiceServerAsyncTask", "Server: connection done");
-                
-//                String fileName = Environment.getExternalStorageDirectory()
-//	                + "/cnc-hx/s-" + System.currentTimeMillis() + ".3gp";
-//                final File f = new File(fileName);
-//                File dirs = new File(f.getParent());
-//                if (!dirs.exists()) dirs.mkdirs();
-//                f.createNewFile();
-//                Log.d("VoiceServerAsyncTask", "server: copying files " + f.toString());
 
                 InputStream is = client.getInputStream();
-                // if (os == null) os = new BufferedOutputStream(new FileOutputStream(f)); //new FileOutputStream(f);
                 
                 int frequency = 44100;
                 int channelConfiguration = AudioFormat.CHANNEL_CONFIGURATION_MONO;
@@ -156,7 +133,6 @@ public class ServerWorker {
                 at.play();
                 int atLen = 0;
                 while ((len = is.read(buffer)) != -1) {
-                	//os.write(buffer, 0, len);
                 	atLen += at.write(buffer, 0, len);
                 	Log.i("InputStream", "LENGTH:" + len);
                 }
@@ -164,7 +140,8 @@ public class ServerWorker {
                 Log.i("InputStream", "AudioTrack LEN:" + atLen);
                 at.stop();
                 at.release();
-                return null;//f.getAbsolutePath();
+                serverSocketVoice.close();
+                return null;
             } catch (IOException e) {
                 Log.e("VoiceServerAsyncTask", e.getMessage());
                 return null;
@@ -173,17 +150,12 @@ public class ServerWorker {
         
         @Override
         protected void onPostExecute(String result) {
-				try {
-					//if(os != null) os.close();
-					serverSocketVoice.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-                /*Intent intent = new Intent();
-                intent.setAction(android.content.Intent.ACTION_VIEW);
-                intent.setDataAndType(Uri.parse("file://" + result), "audio/*");
-                context.startActivity(intent);
-                Toast.makeText(context, "STOP VOICE" , Toast.LENGTH_SHORT).show();*/
+        	Log.d("VoiceServerAsyncTask", "onPostExecute");
+            /*Intent intent = new Intent();
+            intent.setAction(android.content.Intent.ACTION_VIEW);
+            intent.setDataAndType(Uri.parse("file://" + result), "audio/*");
+            context.startActivity(intent);
+            Toast.makeText(context, "STOP VOICE" , Toast.LENGTH_SHORT).show();*/
         }
 	}
 	
@@ -202,7 +174,7 @@ public class ServerWorker {
         @Override
         protected String doInBackground(Void... params) {
             try {
-            	serverSocketText = new ServerSocket(Constants.OWNER_PORT_VOICE);
+            	ServerSocket serverSocketText = new ServerSocket(Constants.OWNER_PORT_VOICE);
                 Log.d("MessageServerAsyncTask", "Server: Socket opened");
                 Socket client = serverSocketText.accept();
                 Log.d("MessageServerAsyncTask", "Server: connection done");
@@ -218,26 +190,11 @@ public class ServerWorker {
         
         @Override
         protected void onPostExecute(String streamUrl) {
-				try {
-					serverSocketText.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
 				if (streamUrl != null) {
-					Toast.makeText(context, "PLAY VIDEO STREAM: rtsp://" + streamUrl + ":8086" , Toast.LENGTH_LONG).show();
+					Toast.makeText(context, "PLAY VIDEO STREAM: rtsp://" + streamUrl + ":" + Constants.RTSP_PORT, Toast.LENGTH_LONG).show();
 					Intent clientIntent = new Intent(context, ClientActivity.class);
 			    	clientIntent.putExtra(Constants.HOST_ADDRESS, streamUrl);
 			    	context.startActivity(clientIntent);
-					/*try {
-						Intent intent = new Intent();
-		                intent.setAction(android.content.Intent.ACTION_VIEW);
-		                intent.setDataAndType(Uri.parse("rtsp://" + streamUrl + ":8086"), "video/*");
-		                context.startActivity(intent);
-	                } catch (Exception e) {
-	                	Toast.makeText(context, "Please install video player to play stream video." , Toast.LENGTH_LONG).show();
-	                	
-	                	e.printStackTrace();
-	                } */
 				}
         }
 	}
