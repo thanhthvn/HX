@@ -21,7 +21,6 @@ import cnc.hx.utils.FileTransferService;
 
 public class ClientWorker {
 	
-	private AudioRecord recorder;
     private boolean isRecording = false;
     String host;
     Context context;
@@ -58,13 +57,13 @@ public class ClientWorker {
     
     private void startRecording() {
  		try {
- 			if (!isRecording && recorder != null) {
- 				recorder.startRecording();
- 				Log.d("startRecording()", "recorder.startRecording()");
- 			} else {
+ 			//if (!isRecording && recorder != null) {
+ 			//	recorder.startRecording();
+ 			//	Log.d("startRecording()", "recorder.startRecording()");
+ 			//} else {
  				new RecordTask().execute();
  				Log.d("startRecording()", "recordTask().execute()");
- 			}
+ 			//}
  			isRecording = true;
  		} catch (IllegalStateException e) {
  			e.printStackTrace();
@@ -75,9 +74,11 @@ public class ClientWorker {
 
     private void stopRecording() {
  		try {
- 			if (recorder != null) {
- 		 		recorder.stop();
- 	    	}
+ 			//if (recorder != null) {
+ 		 	//	recorder.stop();
+ 		 	//	recorder.release();
+ 		 	//	recorder = null;
+ 	    	//}
  	 		isRecording = false;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -98,9 +99,9 @@ public class ClientWorker {
  			Socket socket = new Socket();
  			try {
 				socket.bind(null);
- 				Log.d("recordTask", "Opening client socket, host: " + host);
- 				socket.connect((new InetSocketAddress(host, Constants.OWNER_PORT_VOICE)), 5000);
- 				Log.d("recordTask", "Client socket - " + socket.isConnected());
+ 				Log.d("RecordTask", "Opening client socket, host: " + host);
+ 				socket.connect((new InetSocketAddress(host, Constants.PORT_VOICE_CLIENT)), 5000);
+ 				Log.d("RecordTask", "Client socket connected? : " + socket.isConnected());
  				
  				int frequency = 44100;
                 int channelConfiguration = AudioFormat.CHANNEL_CONFIGURATION_MONO;
@@ -108,7 +109,7 @@ public class ClientWorker {
                 
  				int bufferSize = AudioTrack.getMinBufferSize(frequency, channelConfiguration, audioEncoding);
 
- 				recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
+ 				AudioRecord recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
  						frequency,channelConfiguration ,audioEncoding, 4 * bufferSize);   
                 byte[] buffer = new byte[bufferSize];
                 
@@ -116,13 +117,16 @@ public class ClientWorker {
                 DataOutputStream dataOutputStreamInstance = new DataOutputStream (buff);
                 
                 recorder.startRecording();
+                Log.d("RecordTask", "recorder.startRecording()");
                 while (isRecording) {
                     recorder.read(buffer, 0, bufferSize);
                     dataOutputStreamInstance.write(buffer);
-	              }
+                }
                 if (recorder != null) {
 	                recorder.stop();
 	                recorder.release();
+	                recorder = null;
+	                Log.d("RecordTask", "recorder.release()");
                 }
  			} catch (Exception e) {
  				e.printStackTrace();
@@ -131,10 +135,12 @@ public class ClientWorker {
 					if (socket.isConnected()) {
 						try {
 							socket.close();
+							Log.d("RecordTask", "socket.close()");
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
 					}
+					socket = null;
 				}
 			}
 			return null;

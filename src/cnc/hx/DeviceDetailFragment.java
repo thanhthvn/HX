@@ -171,9 +171,6 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         server = new ServerWorker(getActivity());
         
     	if (!isResume) {
-    		if (info.groupFormed || info.isGroupOwner) {
-    			//server.receiveVoice();
-    		}
 	        if (info.groupFormed && info.isGroupOwner) {
 	        	server.receiveVoice(); // server receive voice
 	        	Log.d("ConnectionInfo", "groupFormed && isGroupOwner");
