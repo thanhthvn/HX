@@ -8,4 +8,6 @@
     <color name="button_color">#9f3c1c</color>
     <color name="time_bg">#8d9094</color>
     <color name="panel_bg">#242583</color>
+    <color name="camera_server_bg">#000000</color>
+    <color name="camera_client_bg">#000000</color>
 </resources>

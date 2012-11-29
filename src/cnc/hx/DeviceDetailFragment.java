@@ -57,9 +57,10 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
     public static final String IP_SERVER = "192.168.49.1";
     
     String host, serverIp, clientIP = IP_SERVER;
-    Button btSendFile, btRecord;
+    Button btSendFile, btRecord, btSendMessage;
     
     Boolean isResume = false;
+    Integer callIntent = 0;
     
     ClientWorker client;
     ServerWorker server;
@@ -89,6 +90,8 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
 
             }
         });
+        
+        callIntent = getActivity().getIntent().getIntExtra(Constants.CALL_INTENT, 1);
 
         mContentView.findViewById(R.id.btn_disconnect).setOnClickListener(
                 new View.OnClickListener() {
@@ -106,22 +109,33 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
                         intent.setType("image/*");
                         startActivityForResult(intent, CHOOSE_FILE_RESULT_CODE);
                     }
-                });	
+                });
+        
         btRecord = (Button) mContentView.findViewById(R.id.btRecord);		
         btRecord.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				if (client == null) client = new ClientWorker(getActivity(), clientIP);
-				Boolean isRecording = client.recordVoice();
-				if (isRecording) {
-					btRecord.setText(R.string.stop_voice);
-				} else {
-					btRecord.setText(R.string.start_voice);
-					//((DeviceActionListener) getActivity()).disconnect();
+				if (callIntent == 1) {
+					if (client == null) client = new ClientWorker(getActivity(), clientIP);
+					Boolean isRecording = client.recordVoice();
+					if (isRecording) {
+						btRecord.setText(R.string.stop_voice);
+					} else {
+						btRecord.setText(R.string.start_voice);
+					}
 				}
-				
+				if (callIntent == 2) {
+					
+				}
 			}
 		});
         
+        btSendMessage = (Button) mContentView.findViewById(R.id.btSendMessage);		
+        btSendMessage.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				if (client == null) client = new ClientWorker(getActivity(), clientIP);
+				client.sendMessage("Hello " + clientIP + "!");
+			}
+		});
         return mContentView;
     }
 
@@ -171,19 +185,35 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         server = new ServerWorker(getActivity());
         
     	if (!isResume) {
-	        if (info.groupFormed && info.isGroupOwner) {
-	        	server.receiveVoice(); // server receive voice
-	        	Log.d("ConnectionInfo", "groupFormed && isGroupOwner");
-	        } else if (info.groupFormed) {
-	        	//server.receiveVoice(); // client receive voice
-	        	mContentView.findViewById(R.id.btRecord).setVisibility(View.VISIBLE);
-	        	((TextView) mContentView.findViewById(R.id.status_text)).setText(getResources().getString(R.string.client_text));
-	        	Log.d("ConnectionInfo", "isGroupOwner");
-	        }
-			isResume = true;
-			Log.d("onConnectionInfoAvailable", "server.receiveVoice();isResume");
+    		if (callIntent == 1) {
+		        if (info.groupFormed && info.isGroupOwner) {
+		        	server.receiveMessage();
+		        	Log.d("ConnectionInfo", "groupFormed && isGroupOwner");
+		        } else if (info.groupFormed) {
+		        	server.receiveMessage();
+		        	//btRecord.setVisibility(View.VISIBLE);
+		        	btSendMessage.setVisibility(View.VISIBLE);
+		        	((TextView) mContentView.findViewById(R.id.status_text)).setText(getResources().getString(R.string.client_text));
+		        	Log.d("ConnectionInfo", "isGroupOwner");
+		        }
+				isResume = true;
+				Log.d("onConnectionInfoAvailable", "server.receiveVoice();isResume");
+    		}
+    		
+    		if (callIntent == 2) {
+    			client = new ClientWorker(getActivity(), host);
+    			if (info.groupFormed && info.isGroupOwner) {
+		        	server.receiveMessage();
+		        	isResume = true;
+    	        } else if (info.groupFormed) {
+    	        	mContentView.findViewById(R.id.btRecord).setVisibility(View.VISIBLE);
+	        		client.sendMessage(serverIp); // serverIp
+		        	startServer();
+		        	isResume = true;
+    	        }
+    		}
     	}
-	    	
+    	
         // hide the connect button
         mContentView.findViewById(R.id.btn_connect).setVisibility(View.GONE);
     }
@@ -228,7 +258,8 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         if (info != null) {
 			if (info.groupFormed || info.isGroupOwner) {
 				getClientIp();
-				mContentView.findViewById(R.id.btRecord).setVisibility(View.VISIBLE);
+				//btRecord.setVisibility(View.VISIBLE);
+				btSendMessage.setVisibility(View.VISIBLE);
 			}
 		}
         //isResume = false;

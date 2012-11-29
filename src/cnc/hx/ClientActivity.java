@@ -101,8 +101,6 @@ public class ClientActivity extends Activity implements OnCompletionListener, On
         layoutControl = (RelativeLayout)findViewById(R.id.control);
         progressBar = (ProgressBar)findViewById(R.id.progress);
         
-        
-        
         audioStream = new MediaPlayer();
         
         // Initiate connection with client
@@ -412,7 +410,7 @@ public class ClientActivity extends Activity implements OnCompletionListener, On
 					videoView.start();
 				} catch (Exception e) {
 					Log.e("onPrepared", e.getMessage());
-				} 
+				}
 			}
 		});
 	}

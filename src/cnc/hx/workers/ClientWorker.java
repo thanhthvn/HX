@@ -18,6 +18,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import cnc.hx.utils.Constants;
 import cnc.hx.utils.FileTransferService;
+import cnc.hx.utils.MessageTransferService;
 
 public class ClientWorker {
 	
@@ -51,8 +52,14 @@ public class ClientWorker {
     	return isRecording;
     }
     
-    public void sendHostIp(String ipAdress) {
-    	new messageTask().execute(ipAdress);
+    public void sendMessage(String msg) {
+    	// new messageTask().execute(msg);
+    	Intent serviceIntent = new Intent(context, MessageTransferService.class);
+        serviceIntent.setAction(MessageTransferService.ACTION_SEND_MESSAGE);
+        serviceIntent.putExtra(MessageTransferService.EXTRAS_MESSSGE_STRING, msg);
+        serviceIntent.putExtra(MessageTransferService.EXTRAS_ADDRESS, host);
+        serviceIntent.putExtra(MessageTransferService.EXTRAS_PORT, Constants.OWNER_PORT_FILE);
+        context.startService(serviceIntent); 
     }
     
     private void startRecording() {
@@ -181,7 +188,6 @@ public class ClientWorker {
 						try {
 							socket.close();
 						} catch (IOException e) {
-							// Give up
 							e.printStackTrace();
 						}
 					}

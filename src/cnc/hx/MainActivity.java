@@ -1,5 +1,6 @@
 package cnc.hx;
 
+import cnc.hx.utils.Constants;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
@@ -22,6 +23,19 @@ public class MainActivity extends Activity {
         btConnectOnOff = (Button) findViewById(R.id.btConnectOnOff);
         btExit = (Button) findViewById(R.id.btExit);
         
+        btBuzzer.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				Intent i = new Intent(MainActivity.this, VideoConversationActivity.class);
+				startActivity(i);
+			}
+		});
+        btAvOnOff.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				Intent i = new Intent(MainActivity.this, WiFiDirectActivity.class);
+				i.putExtra(Constants.CALL_INTENT, 2); // IP Camera Video
+				startActivity(i);
+			}
+		});
         btConnectOnOff.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				startActivity(new Intent(MainActivity.this, WiFiDirectActivity.class));

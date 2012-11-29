@@ -20,7 +20,6 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
-import cnc.hx.ClientActivity;
 import cnc.hx.utils.Constants;
 import cnc.hx.utils.Utils;
 
@@ -41,7 +40,7 @@ public class ServerWorker {
     	new VoiceServerAsyncTask().execute();
     }
     
-    public void receiveHostIp() {
+    public void receiveMessage() {
     	new MessageServerAsyncTask().execute();
     }
     
@@ -52,7 +51,7 @@ public class ServerWorker {
     private class FileServerAsyncTask extends AsyncTask<Void, Void, String> {
 
         public FileServerAsyncTask() {
-            // this.statusText = (TextView) statusText;
+
         }
 
         @Override
@@ -179,9 +178,9 @@ public class ServerWorker {
                 Socket client = serverSocketText.accept();
                 Log.d("MessageServerAsyncTask", "Server: connection done");
                 InputStream is = client.getInputStream();
-                String streamUrl = convertStreamToString(is);
-                Log.d("MessageServerAsyncTask", "Stream URL: " + streamUrl);
-                return streamUrl;
+                String msg = convertStreamToString(is);
+                Log.d("MessageServerAsyncTask", "Message: " + msg);
+                return msg;
             } catch (Exception e) {
                 Log.e("MessageServerAsyncTask", e.getMessage());
                 return null;
@@ -189,13 +188,13 @@ public class ServerWorker {
         }
         
         @Override
-        protected void onPostExecute(String streamUrl) {
-				if (streamUrl != null) {
-					Toast.makeText(context, "PLAY VIDEO STREAM: rtsp://" + streamUrl + ":" + Constants.RTSP_PORT, Toast.LENGTH_LONG).show();
-					Intent clientIntent = new Intent(context, ClientActivity.class);
-			    	clientIntent.putExtra(Constants.HOST_ADDRESS, streamUrl);
-			    	context.startActivity(clientIntent);
-				}
+        protected void onPostExecute(String msg) {
+			if (msg != null) {
+				Toast.makeText(context, "Receive message: " + msg, Toast.LENGTH_LONG).show();
+				//Intent clientIntent = new Intent(context, ClientActivity.class);
+		    	//clientIntent.putExtra(Constants.HOST_ADDRESS, msg);
+		    	//context.startActivity(clientIntent);
+			}
         }
 	}
 	

@@ -1,5 +1,9 @@
 <resources>
 
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="ip_address">IP Address</string>
+    
     <string name="app_name">Handset Connection</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
@@ -32,7 +36,10 @@
 	<string name="av_on_off">Audio Video On/Off</string>
 	<string name="settings_menu">Settings Menu</string>
 	<string name="connect_on_off">Connect On/Off</string>
+	<string name="send_message">Send Message</string>
 	<string name="exit">Exit</string>
+	
+	<string name="server_info">Server Info</string>
 	
 	<string name="options">Options</string>
     <string name="quit">Quit</string>
@@ -48,6 +55,7 @@
     <string name="notification_title">Streaming</string>
     <string name="notification_content">Video streaming is running.</string>
     <string name="client0">Here you can play streams from another smartphone running Spydroid. Both smartphones obvioulsy have to be connected to the same wireless network !</string>
-    <string name="client1">Connect</string>
+    
+    
     
 </resources>

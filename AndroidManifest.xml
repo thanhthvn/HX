@@ -37,8 +37,15 @@
                     android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity 
         
+        <activity
+            android:theme="@android:style/Theme.NoTitleBar"
+            android:name=".VideoConversationActivity"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden">
+        </activity>
+        
+        <activity 
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden"
             android:name=".WiFiDirectActivity"
@@ -63,6 +70,7 @@
             android:label="@string/title_activity_main">
         </activity>
         <!-- Used for transferring files  after a successful connection -->
+        <service android:enabled="true" android:name=".utils.MessageTransferService" />
         <!-- service android:enabled="true" android:name=".utils.FileTransferService" / -->
         <!-- service android:enabled="true" android:name=".utils.VoiceTransferService" / -->
         
