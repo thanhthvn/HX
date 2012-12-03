@@ -20,14 +20,14 @@
             android:layout_width="fill_parent"
             android:layout_height="55dp"
             android:layout_marginBottom="5dip"
-            android:text="Send Message" />
+            android:text="@string/buzzer" />
         <Button
             android:id="@+id/btAvOnOff"
             style="@style/button"
             android:layout_width="fill_parent"
             android:layout_height="55dp"
             android:layout_marginBottom="5dip"
-            android:text="Ip Camera" />
+            android:text="@string/av_on_off" />
         <Button
             android:id="@+id/btSettings"
             style="@style/button"

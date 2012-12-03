@@ -29,6 +29,7 @@ public class MainActivity extends Activity implements CreateNdefMessageCallback,
 	NfcAdapter mNfcAdapter;
 	private static final int MESSAGE_SENT = 1;
 	String serverIp, clientIp;
+	Boolean isVideoIntenCall = false;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -43,20 +44,19 @@ public class MainActivity extends Activity implements CreateNdefMessageCallback,
         
         btBuzzer.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				Intent i = new Intent(MainActivity.this, VideoConversationActivity.class);
-				startActivity(i);
+				callVideoConversation();
 			}
 		});
         btAvOnOff.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				Intent i = new Intent(MainActivity.this, WiFiDirectActivity.class);
-				i.putExtra(Constants.CALL_INTENT, 2); // IP Camera Video
-				startActivity(i);
+				//Intent i = new Intent(MainActivity.this, WiFiDirectActivity.class);
+				//i.putExtra(Constants.CALL_INTENT, 2); // IP Camera Video
+				//startActivity(i);
 			}
 		});
         btConnectOnOff.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				startActivity(new Intent(MainActivity.this, WiFiDirectActivity.class));
+				//startActivity(new Intent(MainActivity.this, WiFiDirectActivity.class));
 			}
 		});
         btExit.setOnClickListener(new View.OnClickListener() {
@@ -83,6 +83,16 @@ public class MainActivity extends Activity implements CreateNdefMessageCallback,
         return true;
     }
 
+    private void callVideoConversation() {
+    	if (!isVideoIntenCall) {
+	    	Intent i = new Intent(MainActivity.this, VideoConversationActivity.class);
+			i.putExtra(Constants.HOST_ADDRESS, clientIp);
+			startActivity(i);
+			finish();
+			isVideoIntenCall = true;
+    	}
+    }
+    
 	public void onNdefPushComplete(NfcEvent event) {
 		// A handler is needed to send messages to the activity when this
         // callback occurs, because it happens from a binder thread
@@ -113,7 +123,8 @@ public class MainActivity extends Activity implements CreateNdefMessageCallback,
         public void handleMessage(Message msg) {
             switch (msg.what) {
             case MESSAGE_SENT:
-                Toast.makeText(getApplicationContext(), "Message sent!", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), getString(R.string.sent_ip), Toast.LENGTH_LONG).show();
+                callVideoConversation();
                 break;
             }
         }
@@ -147,9 +158,7 @@ public class MainActivity extends Activity implements CreateNdefMessageCallback,
         if (!payloadMessage.isEmpty()) {
         	clientIp = payloadMessage;
         	Toast.makeText(this, "Client IP: " + clientIp, Toast.LENGTH_LONG).show();
-        	Intent i = new Intent(this, VideoConversationActivity.class);
-        	i.putExtra(Constants.HOST_ADDRESS, clientIp);
-			startActivity(i);
+        	callVideoConversation();
         }
         
     }

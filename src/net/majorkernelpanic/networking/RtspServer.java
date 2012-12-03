@@ -32,6 +32,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 /**
@@ -47,6 +48,7 @@ public class RtspServer {
 	// Message types for UI thread
 	public static final int MESSAGE_LOG = 2;
 	public static final int MESSAGE_ERROR = 6;
+	public static final int MESSAGE_CLIENT_IP = 7;
 
 	private final Handler handler;
 	private final int port;
@@ -119,9 +121,14 @@ public class RtspServer {
 		public void run() {
 			Request request;
 			Response response;
-			
-			log("Connection from "+client.getInetAddress().getHostAddress());
-
+			String clientIP = client.getInetAddress().getHostAddress();
+			log("Connection from "+ clientIP);
+			if (clientIP != null) {
+				Message msg = new Message();
+				msg.what = MESSAGE_CLIENT_IP;
+				msg.obj = clientIP;
+				handler.sendMessage(msg);
+			}
 			while (!Thread.interrupted()) {
 				try {
 					// Parse the request

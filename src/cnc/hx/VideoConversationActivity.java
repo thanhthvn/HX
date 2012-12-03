@@ -91,11 +91,12 @@ public class VideoConversationActivity extends Activity implements
 	private String host;
 	private String videoParameters = "", audioParameters = "";
 	private Boolean isStreaming = false;
+	LinearLayout llConnectForm;
 	
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
-				| ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+		//setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
+		//		| ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 		setContentView(R.layout.video_conversation);
 		svCameraServer = (SurfaceView) findViewById(R.id.svCameraServer);
 		tvServerInfo = (TextView) findViewById(R.id.tvServerInfo);
@@ -127,7 +128,10 @@ public class VideoConversationActivity extends Activity implements
 		etServerIp = (EditText) findViewById(R.id.etServerIp);
 		flCameraClient = (FrameLayout) findViewById(R.id.flCameraClient);
 		rlForm = (RelativeLayout) findViewById(R.id.rlForm);
+		llConnectForm = (LinearLayout) findViewById(R.id.llConnectForm);
 		progressBar = (ProgressBar)findViewById(R.id.progress);
+		
+		llConnectForm.setVisibility(View.GONE);
 		
 		// Resolution
         Spinner spinner = (Spinner) findViewById(R.id.spinner1);
@@ -169,45 +173,50 @@ public class VideoConversationActivity extends Activity implements
         spinner.setOnItemSelectedListener(this);
         
 		settings = PreferenceManager.getDefaultSharedPreferences(this);
-		etServerIp.setText(settings.getString("last_server_ip", "10.0.2.23"));
+		etServerIp.setText(settings.getString("last_server_ip", "10.0.2.10"));
         
-        host = getIntent().getStringExtra(Constants.HOST_ADDRESS);
-        if (host != null) {
-        	if (!host.isEmpty()) {
-        		etServerIp.setText(host);
-	        	findViewById(R.id.btConnect).performClick();
-        	}
-        }
 		audioStream = new MediaPlayer();
 
 		btConnect.setOnClickListener(
 			new OnClickListener() {
 				public void onClick(View v) {
-					if (!isStreaming) {
-						Editor editor = settings.edit();
-						editor.putString("last_server_ip", etServerIp.getText().toString());
-						editor.commit();
-						progressBar.setVisibility(View.VISIBLE);
-						getCurrentConfiguration();
-						InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-						imm.hideSoftInputFromWindow(etServerIp.getWindowToken(), 0);
-						btConnect.setText(R.string.disconnect);		
-						isStreaming = true;
-					} else {
-						stopStreaming();
-						btConnect.setText(R.string.connect);
-						progressBar.setVisibility(View.GONE);
-						isStreaming = false;
-					}
+					host = etServerIp.getText().toString();
+					startConnect();
 				}
-			});
+		});
 		
+		host = getIntent().getStringExtra(Constants.HOST_ADDRESS);
 		/*btStop = (ImageView) findViewById(R.id.btStop);
         btStop.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 	            stopServer();
 			}
 		}); */
+	}
+	
+	private void startConnect() {
+		if (host != null) {
+			if (!host.equalsIgnoreCase("")) {
+				etServerIp.setText(host);
+				if (!isStreaming) {
+					Editor editor = settings.edit();
+					editor.putString("last_server_ip", host);
+					editor.commit();
+					progressBar.setVisibility(View.VISIBLE);
+					getCurrentConfiguration();
+					InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+					imm.hideSoftInputFromWindow(etServerIp.getWindowToken(), 0);
+					btConnect.setText(R.string.disconnect);	
+					Toast.makeText(this, "Streaming from " + host, Toast.LENGTH_LONG).show();
+					isStreaming = true;
+				} else {
+					stopStreaming();
+					btConnect.setText(R.string.connect);
+					progressBar.setVisibility(View.GONE);
+					isStreaming = false;
+				}
+			}
+		}
 	}
 	
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
@@ -254,8 +263,9 @@ public class VideoConversationActivity extends Activity implements
 	public void onResume() {
 		super.onResume();
 		if (!streaming) displayIpAddress();
-		startServers();
 		registerReceiver(wifiStateReceiver, new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
+		startServers();
+    	startConnect();
 	}
 
 	public void onPause() {
@@ -271,6 +281,13 @@ public class VideoConversationActivity extends Activity implements
 		if (rtspServer != null) rtspServer.stop();
 	}
 
+	public void onBackPressed() {
+		Intent i = new Intent(this, MainActivity.class);
+    	i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    	startActivity(i);
+    	finish();
+    }
+	
 	private void startServers() {
 		if (rtspServer != null) {
 			try {
@@ -328,6 +345,12 @@ public class VideoConversationActivity extends Activity implements
 			case Session.MESSAGE_ERROR:
 				log((String) msg.obj);
 				break;
+			case Session.MESSAGE_CLIENT_IP:
+				if (host == null && !isStreaming) {
+					host = (String) msg.obj;
+					startConnect();
+				}
+				break;
 			}
 		}
 
@@ -382,7 +405,7 @@ public class VideoConversationActivity extends Activity implements
 				HttpConnectionParams.setConnectionTimeout(httpParameters, 3000);
 				HttpConnectionParams.setSoTimeout(httpParameters, 3000);
 		        HttpClient client = new DefaultHttpClient(httpParameters);
-		        HttpGet request = new HttpGet("http://"+ etServerIp.getText().toString()+":8080/config.json?get");
+		        HttpGet request = new HttpGet("http://"+ host +":8080/config.json?get");
 		        ResponseHandler<String> responseHandler = new BasicResponseHandler();
 		        String response="";
 				try {
@@ -506,7 +529,7 @@ public class VideoConversationActivity extends Activity implements
 				flCameraClient.addView(videoView);
 				videoView.setOnPreparedListener(this);
 				videoView.setOnCompletionListener(this);
-				videoView.setVideoURI(Uri.parse("rtsp://"+etServerIp.getText().toString()+":" + Constants.RTSP_PORT +"/"+(videoParameters.length()>0?("?"+videoParameters):"")));
+				videoView.setVideoURI(Uri.parse("rtsp://"+host+":" + Constants.RTSP_PORT +"/"+(videoParameters.length()>0?("?"+videoParameters):"")));
 				videoView.requestFocus();
 			} catch (Exception e) {
 				Log.e("connectToServer","connectToServer:videoView: " +e.getMessage());
@@ -518,7 +541,7 @@ public class VideoConversationActivity extends Activity implements
 		if (audioParameters.length() > 0) {
 			try {
 				audioStream.reset();
-				audioStream.setDataSource(this, Uri.parse("rtsp://"+"connectToServer" + etServerIp.getText().toString()+":" + Constants.RTSP_PORT +"/"+(audioParameters.length()>0?("?"+audioParameters):"")));
+				audioStream.setDataSource(this, Uri.parse("rtsp://"+"connectToServer" + host+":" + Constants.RTSP_PORT +"/"+(audioParameters.length()>0?("?"+audioParameters):"")));
 				audioStream.setAudioStreamType(AudioManager.STREAM_MUSIC);
 				audioStream.setOnPreparedListener(new OnPreparedListener() {
 					public void onPrepared(MediaPlayer mp) {
@@ -531,7 +554,7 @@ public class VideoConversationActivity extends Activity implements
 				e.printStackTrace();
 			} 
 		}
-		Log.d("connectToServer","connect to rtsp://"+etServerIp.getText().toString()+":" + Constants.RTSP_PORT + (videoParameters.length()>0?("?"+videoParameters):""));
+		Log.d("connectToServer","connect to rtsp://"+host+":" + Constants.RTSP_PORT + (videoParameters.length()>0?("?"+videoParameters):""));
 		
 	}
 	
