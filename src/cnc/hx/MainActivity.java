@@ -75,6 +75,9 @@ public class MainActivity extends Activity implements CreateNdefMessageCallback,
 	        // Register callback to listen for message-sent success
 	        mNfcAdapter.setOnNdefPushCompleteCallback(this, this);
         }
+        
+        
+        
     }
 
     @Override

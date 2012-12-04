@@ -41,6 +41,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 
 import cnc.hx.utils.Constants;
+import cnc.hx.utils.CustomHttpServer;
 
 import android.app.Activity;
 import android.app.Notification;

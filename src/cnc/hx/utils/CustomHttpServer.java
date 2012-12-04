@@ -19,7 +19,7 @@
  */
 
 
-package cnc.hx;
+package cnc.hx.utils;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -44,6 +44,10 @@ import org.apache.http.entity.ContentProducer;
 import org.apache.http.entity.EntityTemplate;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
+
+import cnc.hx.R;
+import cnc.hx.ServerActivity;
+import cnc.hx.R.raw;
 
 import android.content.Context;
 import android.content.Intent;
@@ -71,6 +75,8 @@ public class CustomHttpServer extends HttpServer {
 	}
 
 	private static boolean screenState = true;
+	
+	public static String HX_DETECt_TAG = "__HX_APP_DETECT";
 
 	/** Called with false when AndroidActivity stops and with true when it starts **/
 	public static void setScreenState(boolean state) {
@@ -128,7 +134,9 @@ public class CustomHttpServer extends HttpServer {
 					
 					// Send the current streaming configuration to the client
 					else if (params.get(0).getName().equals("get")) {
-						result = "{\"streamAudio\":" + settings.getBoolean("stream_audio", false) + "," +
+						result =
+								"{\"" + HX_DETECt_TAG + "\": true," +
+								"{\"streamAudio\":" + settings.getBoolean("stream_audio", false) + "," +
 								"\"audioEncoder\":\"" + (Integer.parseInt(settings.getString("audio_encoder", "3"))==3?"AMR-NB":"AAC") + "\"," +
 								"\"streamVideo\":" + settings.getBoolean("stream_video", true) + "," +
 								"\"videoEncoder\":\"" + (Integer.parseInt(settings.getString("video_encoder", "2"))==2?"H.263":"H.264") + "\"," +

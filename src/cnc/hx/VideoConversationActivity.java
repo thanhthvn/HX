@@ -5,6 +5,11 @@ import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.majorkernelpanic.networking.RtspServer;
+import net.majorkernelpanic.networking.Session;
+import net.majorkernelpanic.streaming.video.H264Stream;
+import net.majorkernelpanic.streaming.video.VideoQuality;
+
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
@@ -17,14 +22,7 @@ import org.apache.http.params.HttpParams;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import net.majorkernelpanic.networking.RtspServer;
-import net.majorkernelpanic.networking.Session;
-import net.majorkernelpanic.streaming.video.H264Stream;
-import net.majorkernelpanic.streaming.video.VideoQuality;
-import cnc.hx.ClientActivity.MyVideoView;
-import cnc.hx.utils.Constants;
 import android.app.Activity;
-import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -32,7 +30,6 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.content.pm.ActivityInfo;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -52,12 +49,13 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -66,7 +64,9 @@ import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
-import android.widget.AdapterView.OnItemSelectedListener;
+import cnc.hx.utils.Constants;
+import cnc.hx.utils.CustomHttpServer;
+import cnc.hx.utils.Utils;
 
 public class VideoConversationActivity extends Activity implements
 		OnSharedPreferenceChangeListener, 
@@ -78,6 +78,7 @@ public class VideoConversationActivity extends Activity implements
 	private RtspServer rtspServer = null;
 	private TextView tvServerInfo;
 	private Context context;
+	private ImageButton btSetting;
 
 	// Client
 	private SharedPreferences settings;
@@ -111,7 +112,7 @@ public class VideoConversationActivity extends Activity implements
 		Session.setSurfaceHolder(holder);
 		Session.setHandler(handler);
 		Session.setDefaultAudioEncoder(settings.getBoolean("stream_audio",
-				false) ? Integer.parseInt(settings.getString("audio_encoder",
+				true) ? Integer.parseInt(settings.getString("audio_encoder",
 				"3")) : 0);
 		Session.setDefaultVideoEncoder(settings
 				.getBoolean("stream_video", true) ? Integer.parseInt(settings
@@ -123,6 +124,14 @@ public class VideoConversationActivity extends Activity implements
 		rtspServer = new RtspServer(Constants.RTSP_PORT, handler);
 		httpServer = new CustomHttpServer(8080, this.getApplicationContext(), handler);
 
+		btSetting = (ImageButton) findViewById(R.id.btSetting);
+		btSetting.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				Intent intent = new Intent(context,OptionsActivity.class);
+	            startActivityForResult(intent, 0);
+			}
+		}); 
+		
 		// Client
 		btConnect = (Button) findViewById(R.id.btConnect);
 		etServerIp = (EditText) findViewById(R.id.etServerIp);
@@ -131,7 +140,7 @@ public class VideoConversationActivity extends Activity implements
 		llConnectForm = (LinearLayout) findViewById(R.id.llConnectForm);
 		progressBar = (ProgressBar)findViewById(R.id.progress);
 		
-		llConnectForm.setVisibility(View.GONE);
+		//llConnectForm.setVisibility(View.GONE);
 		
 		// Resolution
         Spinner spinner = (Spinner) findViewById(R.id.spinner1);
@@ -181,7 +190,9 @@ public class VideoConversationActivity extends Activity implements
 			new OnClickListener() {
 				public void onClick(View v) {
 					host = etServerIp.getText().toString();
-					startConnect();
+					// startConnect();
+					
+			        Utils.getHxDevices(VideoConversationActivity.this, 8080);
 				}
 		});
 		
@@ -192,6 +203,7 @@ public class VideoConversationActivity extends Activity implements
 	            stopServer();
 			}
 		}); */
+				
 	}
 	
 	private void startConnect() {
@@ -355,11 +367,6 @@ public class VideoConversationActivity extends Activity implements
 		}
 
 	};
-
-	private void stopServer() {
-    	if (httpServer != null) httpServer.stop();
-    	finish();	
-    }
 	
 	private void displayIpAddress() {
 		WifiManager wifiManager = (WifiManager) context

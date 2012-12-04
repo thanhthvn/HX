@@ -33,7 +33,7 @@
         <ListPreference
             android:title="Video encoder"
             android:key="video_encoder"
-            android:defaultValue="2"
+            android:defaultValue="1"
             android:summary="Two video compression algorithms are available: H.263 and H.264"
             android:entries="@array/videoEncoderArray"
             android:entryValues="@array/videoEncoderValues" />
@@ -41,7 +41,7 @@
         <ListPreference
             android:title="Resolution"
             android:key="video_resolution"
-            android:defaultValue="320x240"
+            android:defaultValue="640x480"
             android:entries="@array/videoResolutionArray"
             android:entryValues="@array/videoResolutionArray" />
                 
@@ -55,7 +55,7 @@
         <ListPreference
             android:title="Bitrate"
             android:key="video_bitrate"
-            android:defaultValue="500"
+            android:defaultValue="1000"
             android:entries="@array/videoBitrateArray"
             android:entryValues="@array/videoBitrateValues" />
 
