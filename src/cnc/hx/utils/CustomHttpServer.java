@@ -136,7 +136,7 @@ public class CustomHttpServer extends HttpServer {
 					else if (params.get(0).getName().equals("get")) {
 						result =
 								"{\"" + HX_DETECt_TAG + "\": true," +
-								"{\"streamAudio\":" + settings.getBoolean("stream_audio", false) + "," +
+								"\"streamAudio\":" + settings.getBoolean("stream_audio", false) + "," +
 								"\"audioEncoder\":\"" + (Integer.parseInt(settings.getString("audio_encoder", "3"))==3?"AMR-NB":"AAC") + "\"," +
 								"\"streamVideo\":" + settings.getBoolean("stream_video", true) + "," +
 								"\"videoEncoder\":\"" + (Integer.parseInt(settings.getString("video_encoder", "2"))==2?"H.263":"H.264") + "\"," +

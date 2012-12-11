@@ -6,6 +6,11 @@
     <string name="ip_not_detect">Cannot get IP Address of this device, please enable Wifi connection.</string>
     <string name="nfc_not_available">NFC is not available on this device.</string>
     <string name="sent_ip">Sent IP address to client successfullly.</string>
+    <string name="device_list">Device list</string>
+    <string name="device">Device</string>
+    <string name="search">Search</string>
+    <string name="close">Close</string>
+    <string name="no_device">No device!</string>
     
     <string name="app_name">Handset Connection</string>
     <string name="hello_world">Hello world!</string>
@@ -58,7 +63,5 @@
     <string name="notification_title">Streaming</string>
     <string name="notification_content">Video streaming is running.</string>
     <string name="client0">Here you can play streams from another smartphone running Spydroid. Both smartphones obvioulsy have to be connected to the same wireless network !</string>
-    
-    
     
 </resources>

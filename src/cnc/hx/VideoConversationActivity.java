@@ -84,7 +84,7 @@ public class VideoConversationActivity extends Activity implements
 	private SharedPreferences settings;
 	Button btConnect;
 	private EditText etServerIp;
-	private MyVideoView videoView;
+	private VideoView videoView;
 	private MediaPlayer audioStream;
 	private FrameLayout flCameraClient;
 	private RelativeLayout rlForm;
@@ -140,7 +140,7 @@ public class VideoConversationActivity extends Activity implements
 		llConnectForm = (LinearLayout) findViewById(R.id.llConnectForm);
 		progressBar = (ProgressBar)findViewById(R.id.progress);
 		
-		//llConnectForm.setVisibility(View.GONE);
+		// llConnectForm.setVisibility(View.GONE);
 		
 		// Resolution
         Spinner spinner = (Spinner) findViewById(R.id.spinner1);
@@ -190,20 +190,18 @@ public class VideoConversationActivity extends Activity implements
 			new OnClickListener() {
 				public void onClick(View v) {
 					host = etServerIp.getText().toString();
-					// startConnect();
-					
-			        Utils.getHxDevices(VideoConversationActivity.this, 8080);
+					startConnect();
 				}
 		});
 		
 		host = getIntent().getStringExtra(Constants.HOST_ADDRESS);
+		if (host != null) etServerIp.setText(host);
 		/*btStop = (ImageView) findViewById(R.id.btStop);
         btStop.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 	            stopServer();
 			}
 		}); */
-				
 	}
 	
 	private void startConnect() {
@@ -277,12 +275,13 @@ public class VideoConversationActivity extends Activity implements
 		if (!streaming) displayIpAddress();
 		registerReceiver(wifiStateReceiver, new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
 		startServers();
-    	startConnect();
+    	//startConnect();
 	}
 
 	public void onPause() {
 		super.onPause();
 		if (rtspServer != null) rtspServer.stop();
+		if (httpServer != null) httpServer.stop();//
 		CustomHttpServer.setScreenState(false);
 		unregisterReceiver(wifiStateReceiver);
 	}
@@ -294,10 +293,11 @@ public class VideoConversationActivity extends Activity implements
 	}
 
 	public void onBackPressed() {
+		finish();
 		Intent i = new Intent(this, MainActivity.class);
     	i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     	startActivity(i);
-    	finish();
+    	
     }
 	
 	private void startServers() {
@@ -357,7 +357,7 @@ public class VideoConversationActivity extends Activity implements
 			case Session.MESSAGE_ERROR:
 				log((String) msg.obj);
 				break;
-			case Session.MESSAGE_CLIENT_IP:
+			case RtspServer.MESSAGE_CLIENT_IP:
 				if (host == null && !isStreaming) {
 					host = (String) msg.obj;
 					startConnect();
@@ -509,7 +509,7 @@ public class VideoConversationActivity extends Activity implements
 				br = Integer.parseInt(m.group(1));
 			} catch (Exception ignore) {}
 
-			videoParameters += "h264";//((String)((Spinner)findViewById(spinners[3])).getSelectedItem()).equals("H.264")?"h264":"h263";
+			videoParameters += ((String)((Spinner)findViewById(spinners[3])).getSelectedItem()).equals("H.264")?"h264":"h263";
 			videoParameters += "="+br+"-"+fps+"-"+resX+"-"+resY;
 		} else {
 			videoParameters = "novideo";
@@ -529,10 +529,11 @@ public class VideoConversationActivity extends Activity implements
 		// Start video streaming
 		if (videoParameters.length()>0) {
 			try {
-				videoView = new MyVideoView(this);
-				videoView.setLayoutParams(new LinearLayout.LayoutParams(
-						LinearLayout.LayoutParams.FILL_PARENT,
-						LinearLayout.LayoutParams.FILL_PARENT));
+				Log.d("connectToServer","new videoView");
+				videoView = new VideoView(this);
+				//videoView.setLayoutParams(new LinearLayout.LayoutParams(
+				//		LinearLayout.LayoutParams.FILL_PARENT,
+				//		LinearLayout.LayoutParams.FILL_PARENT));
 				flCameraClient.addView(videoView);
 				videoView.setOnPreparedListener(this);
 				videoView.setOnCompletionListener(this);
@@ -567,6 +568,7 @@ public class VideoConversationActivity extends Activity implements
 	
 	private void stopStreaming() {
 		try {
+			Log.d("stopStreaming","stopStreaming");
 			if (videoView != null && videoView.isPlaying()) {
 				flCameraClient.removeView(videoView);
 				videoView.stopPlayback();
@@ -587,6 +589,7 @@ public class VideoConversationActivity extends Activity implements
 				progressBar.setVisibility(View.GONE);
 				//layoutControl.setVisibility(View.VISIBLE);
 				try {
+					Log.d("onPrepared","videoView.start()");
 					videoView.start();
 				} catch (Exception e) {
 					Log.e("onPrepared", e.getMessage());
@@ -601,6 +604,7 @@ public class VideoConversationActivity extends Activity implements
 				//layoutControl.setVisibility(View.GONE);
 				progressBar.setVisibility(View.GONE);
 				//layoutForm.setVisibility(View.VISIBLE);
+				Log.d("onCompletion","stopStreaming");
 				stopStreaming();
 			}
 		});

@@ -5,7 +5,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Array;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -15,8 +14,6 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -33,107 +30,95 @@ import org.apache.http.params.HttpParams;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import cnc.hx.R;
-
 import android.content.Context;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Handler;
 import android.util.Log;
-import android.widget.CheckBox;
 import android.widget.Toast;
+import cnc.hx.entities.Device;
 
 public class Utils {
 	
 	private final static String p2pInt = "p2p-p2p0";
 	
-	public static String[] getHxDevices(Context context, int port) {
-		ArrayList<String> existIPs = scanIPs(context, port);
+	public static ArrayList<Device> getHxDevices(Context context, int port, Handler handler) {
+		long start = System.currentTimeMillis();
+		ArrayList<String> existIPs = scanIPs(context, port, handler);
+		ArrayList<Device> hxDeviceList = new ArrayList<Device>(); 
 		HttpParams httpParameters = new BasicHttpParams();
-		HttpConnectionParams.setConnectionTimeout(httpParameters, 3000);
-		HttpConnectionParams.setSoTimeout(httpParameters, 3000);
+		HttpConnectionParams.setConnectionTimeout(httpParameters, 1000);
+		HttpConnectionParams.setSoTimeout(httpParameters, 1000);
         HttpClient client;
         HttpGet request;
         ResponseHandler<String> responseHandler;
         for (int i= 0; i< existIPs.size(); i++) {
+        	String ip = existIPs.get(i);
+        	Log.d("getHxDevices", "Checking IP: " + ip);
 	        client = new DefaultHttpClient(httpParameters);
-	        String ip = existIPs.get(i);
-	        request = new HttpGet("http://"+ ip +":8080/config.json?get");
-	        responseHandler = new BasicResponseHandler();
 	        String response = "";
 			try {
+            	request = new HttpGet("http://"+ ip +":8080/config.json?get");
+    	        responseHandler = new BasicResponseHandler();
 				response = client.execute(request, responseHandler);
 				if (response != null) {
 					JSONObject object = (JSONObject) new JSONTokener(response).nextValue();
 					Boolean isHxDevice = object.getBoolean(CustomHttpServer.HX_DETECt_TAG);
 					if (isHxDevice) {
-						Log.d("getHxDevices", "Device " + (i + 1) + object.toString());
+						Device d = new Device();
+						d.setIp(ip);
+						hxDeviceList.add(d);
+						Log.d("getHxDevices", "Device " + ip + " result: " +object.toString());
 					}
 				}
 			} catch (ConnectTimeoutException e) {
 				Log.i("getHxDevices","Connection timeout!");
 			} catch (Exception e) {
-				e.printStackTrace();
+				Log.i("getHxDevices","Exception");
 			}
         }
-		return null;
+        long time = System.currentTimeMillis() - start;
+        Toast.makeText(context, "Found: " + hxDeviceList.size() +  " available HX devices, total time: " + time, Toast.LENGTH_LONG).show();
+		return hxDeviceList;
 	}
 	
-	public static ArrayList<String>  scanIPs(Context context, int port) {
+	public static ArrayList<String>  scanIPs(Context context, int port, Handler handler) {
 		int[] myIpArr = getIpArray(context);
 		ArrayList<String> existIPs = new ArrayList<String>();
 		if (myIpArr != null) {
-			final int timeout = 20;
-			long start = System.currentTimeMillis();
+			final int timeout = 300;
 			String ipMask = myIpArr[0] + "." + myIpArr[1] + "." + myIpArr[2] + ".";
 			int myIpHost = myIpArr[3];
-			final ExecutorService es = Executors.newFixedThreadPool(20);
-			final List<Future<Boolean>> futures = new ArrayList<Future<Boolean>>();
 			String searchIp;
-			String[] searchIps = new String[255];
-			for (int i = 0; i < 255; i++) {
-				if (i != myIpHost) {
-					searchIp = ipMask + String.valueOf(i);
-					searchIps[i] = searchIp;
-					futures.add(isIPExist(es, searchIp, port, timeout));
-				}
-			}
-			es.shutdown();
 			int count = 0;
-			
-			for (final Future<Boolean> f : futures) {
-				try {
-					if (f.get()) {
-						existIPs.add(searchIps[futures.indexOf(f)]);
-						count ++;
+			for (int i = 2; i < 255; i++) {
+				if (i != myIpHost) {
+					try {
+						searchIp = ipMask + String.valueOf(i);
+						handler.obtainMessage(1, searchIp).sendToTarget();
+						Log.d("Check IP", "IP: " + searchIp);
+						//Socket socket = new Socket(ip, port);
+			        	//socket.setSoTimeout(timeout);
+			            Socket socket = new Socket();
+			        	socket.connect(new InetSocketAddress(searchIp, port), timeout);
+			        	socket.close();
+			        	socket = null;
+			        	Log.d("Check IP", ">>>>> IP: " + searchIp + " is OK");
+				        existIPs.add(searchIp);
+						Toast.makeText(context, "Found device: "  + searchIp, Toast.LENGTH_SHORT).show();
+						//	InetAddress in = InetAddress.getByName(searchIp);
+						//	if (in.isReachable(timeout)) {
+				        //		Log.d("Check IP", ">>>>> IP: " + searchIp + " is OK");
+				        //		existIPs.add(searchIp);
+				        //	}
+					} catch (Exception e) {
+						//e.printStackTrace();
 					}
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				} catch (ExecutionException e) {
-					e.printStackTrace();
 				}
 			}
-			long time = System.currentTimeMillis() - start;
-			Log.d("scanIPs", "Total exist IPs: " + count + ", total time: " + time);
+			Log.d("scanIPs", "Total exist IPs: " + count);
 		}
 		return existIPs;
-	}
-	
-	public static Future<Boolean> isIPExist(final ExecutorService es, final String ip, final int port, final int timeout) {
-	  return es.submit(new Callable<Boolean>() {
-	      public Boolean call() {
-	        try {
-	        	Log.d("Check IP", "IP: " + ip);
-	        	Socket socket = new Socket();
-	        	socket.connect(new InetSocketAddress(ip, port), timeout);
-	        	socket.close();
-	        	Log.d("Check IP", ">>>>> IP: " + ip + " is OK");
-	        	return true;
-	        } catch (Exception ex) {
-	        	Log.e("Check IP", ex.getMessage()); 
-	        	return false;
-	        }
-	      }
-	   });
 	}
 	
 	public static boolean copyFile(InputStream inputStream, OutputStream out) {

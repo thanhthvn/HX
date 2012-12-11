@@ -26,12 +26,14 @@
     <!-- RESOLUTION -->
     <string-array name="videoResolutionArray">
         <item>640x480</item>
+        <item>352x288</item>
         <item>320x240</item>
         <item>176x144</item>
     </string-array>
     
     <!-- FRAMERATE -->
     <string-array name="videoFramerateArray">
+        <item>30 fps</item>
         <item>20 fps</item>
         <item>15 fps</item>
         <item>10 fps</item>
@@ -39,6 +41,7 @@
     </string-array>
 
     <string-array name="videoFramerateValues">
+        <item>30</item>
         <item>20</item>
         <item>15</item>
         <item>10</item>

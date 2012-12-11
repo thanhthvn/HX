@@ -8,7 +8,7 @@
         <CheckBoxPreference
                 android:key="stream_audio"
                 android:title="Sound streaming"
-                android:defaultValue="true"
+                android:defaultValue="false"
                 android:summary="Enable/Disable audio streaming" />
 
         <ListPreference
@@ -55,7 +55,7 @@
         <ListPreference
             android:title="Bitrate"
             android:key="video_bitrate"
-            android:defaultValue="1000"
+            android:defaultValue="500"
             android:entries="@array/videoBitrateArray"
             android:entryValues="@array/videoBitrateValues" />
 

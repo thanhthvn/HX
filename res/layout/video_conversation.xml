@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
     android:orientation="vertical" >
 
     <FrameLayout
@@ -9,25 +9,24 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:background="@color/camera_client_bg" >
+        <SurfaceView 
+            android:id="@+id/svCameraClient" 
+            android:layout_width="fill_parent" 
+            android:layout_height="fill_parent"
+        />
     </FrameLayout>
 
-    <ProgressBar
-        android:visibility="gone"
-        android:layout_centerInParent="true"
-        android:layout_gravity="center"
-        android:id="@+id/progress"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-    
     <RelativeLayout
         android:id="@+id/rlForm"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true" >
+        android:layout_alignParentLeft="true"
+        
+         >
 
         <LinearLayout
+            android:visibility="gone"
             android:id="@+id/llConnectForm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -48,14 +47,17 @@
                 android:layout_height="wrap_content"
                 android:text="@string/connect" />
         </LinearLayout>
+
         <TextView
             android:id="@+id/tvServerInfo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/etServerIp"
             android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
             android:gravity="center"
+            android:layout_marginRight="10dp"
             android:text="@string/server_info" />
+
     </RelativeLayout>
 
     <RelativeLayout
@@ -65,8 +67,7 @@
         android:layout_alignParentRight="true"
         android:layout_marginBottom="5dp"
         android:layout_marginRight="10dp"
-        android:background="@color/camera_server_bg"
-        android:padding="2dp" >
+        android:background="@color/camera_server_bg" >
 
         <SurfaceView
             android:id="@+id/svCameraServer"
@@ -85,7 +86,9 @@
             android:background="#00000000"
             android:padding="0dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/settings" />
+            android:src="@drawable/settings" 
+            android:visibility="gone"
+            />
 
     </RelativeLayout>
 

@@ -49,6 +49,8 @@ public class RtspServer {
 	public static final int MESSAGE_LOG = 2;
 	public static final int MESSAGE_ERROR = 6;
 	public static final int MESSAGE_CLIENT_IP = 7;
+	public static final int MESSAGE_CONNECT = 8;
+	public static final int MESSAGE_DISCONNECT = 9; 
 
 	private final Handler handler;
 	private final int port;
@@ -122,12 +124,9 @@ public class RtspServer {
 			Request request;
 			Response response;
 			String clientIP = client.getInetAddress().getHostAddress();
-			log("Connection from "+ clientIP);
+			handler.obtainMessage(MESSAGE_CONNECT, "Connection from "+ clientIP).sendToTarget();
 			if (clientIP != null) {
-				Message msg = new Message();
-				msg.what = MESSAGE_CLIENT_IP;
-				msg.obj = clientIP;
-				handler.sendMessage(msg);
+				handler.obtainMessage(MESSAGE_CLIENT_IP, clientIP).sendToTarget();
 			}
 			while (!Thread.interrupted()) {
 				try {
@@ -155,7 +154,7 @@ public class RtspServer {
 				client.close();
 			} catch (IOException ignore) {}
 			
-			log("Client disconnected");
+			handler.obtainMessage(MESSAGE_DISCONNECT, "Client disconnected!").sendToTarget();
 			
 		}
 		
@@ -287,7 +286,7 @@ public class RtspServer {
 		// Display an error on user interface
 		private void loge(String error) {
 			handler.obtainMessage(MESSAGE_LOG, error).sendToTarget();
-			Log.e(TAG,error);
+			Log.e(TAG, "Error:" + error);
 		}
 
 	}
@@ -310,7 +309,7 @@ public class RtspServer {
 			Matcher matcher;
 
 			// Parsing request method & uri
-			if ((line = input.readLine())==null) throw new SocketException("Client disconnected");
+			if ((line = input.readLine())==null) throw new SocketException("Client disconnected!");
 			matcher = regexMethod.matcher(line);
 			matcher.find();
 			request.method = matcher.group(1);
@@ -322,7 +321,7 @@ public class RtspServer {
 				matcher.find();
 				request.headers.put(matcher.group(1).toLowerCase(),matcher.group(2));
 			}
-			if (line==null) throw new SocketException("Client disconnected");
+			if (line==null) throw new SocketException("Client disconnected!");
 			
 			Log.e(TAG,request.method+" "+request.uri);
 			
